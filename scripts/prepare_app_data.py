@@ -387,6 +387,7 @@ def write_strategy_evidence() -> None:
             "name": name,
             "respondentCount": len(group),
             "purchaseIntent": mean(float(row["lumen_purchase_intent_1_10"]) for row in group),
+            "monthlySpendEur": mean(float(row["monthly_beverage_spend_eur"]) for row in group),
             "priceSensitivity": mean(float(row["price_sensitivity_1_10"]) for row in group),
             "priceRespondentCount": len(thresholds),
             "tooExpensiveEur": mean(thresholds),
@@ -397,6 +398,8 @@ def write_strategy_evidence() -> None:
                         "price_sensitivity_survey.csv (Exhibit 10, separate synthetic sample)"],
             "respondentCount": len(customers),
             "groceryRespondentCount": sum(row["preferred_channel"] == "Retail/Grocery" for row in customers),
+            "channels": [{"name": channel, "respondentCount": sum(row["preferred_channel"] == channel for row in customers)}
+                         for channel in CHANNELS],
             "segments": segments,
         }, destination, indent=2)
         destination.write("\n")

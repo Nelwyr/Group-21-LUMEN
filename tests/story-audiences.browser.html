@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Segment and channel checks</title>
+<style>body { margin: 0; } iframe { display: block; border: 0; width: 100%; height: 2200px; }</style>
+<iframe id="app" src="../index.html#segments" title="Segment and channel comparisons"></iframe>
+<pre id="report">RUNNING</pre>
+<script type="module">
+const frame = document.getElementById("app");
+const params = new URLSearchParams(location.search);
+if (params.has("viewport")) frame.style.width = `${Number(params.get("viewport"))}px`;
+const checks = [];
+function assert(condition, message) { if (!condition) throw new Error(message); checks.push(message); }
+async function until(test) {
+  for (let n = 0; n < 300; n++) {
+    if (test()) return;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  throw new Error("Timed out waiting for audience comparison");
+}
+try {
+  await until(() => frame.contentDocument.getElementById("segments-status")?.textContent === "Segment evidence ready"
+    && frame.contentDocument.getElementById("channels-status")?.textContent === "Channel comparison ready");
+  const win = frame.contentWindow, doc = frame.contentDocument;
+  const get = (id) => doc.getElementById(id);
+  const text = (id) => get(id).textContent;
+  const evidence = await (await fetch("../data/app_data/strategy_evidence.json")).json();
+  const money = new Intl.NumberFormat("en-GB", { style: "currency", currency: "EUR" });
+  assert(get("segment-comparison").children.length === 4, "All four segments are compared");
+  const priorities = [...doc.querySelectorAll(".audience-priority")].map((card) => card.dataset.segment).sort();
+  assert(priorities.join() === ["Fitness & Gym-Goers", "Urban Wellness Professionals"].join(), "Only the two priority segments have labelled highlights");
+  for (const segment of evidence.segments) {
+    const card = doc.querySelector(`[data-segment="${segment.name}"]`);
+    assert(card.textContent.includes(`${segment.respondentCount} of 420`) && card.textContent.includes(money.format(segment.monthlySpendEur))
+      && card.textContent.includes(money.format(segment.tooExpensiveEur)) && card.textContent.includes(`n = ${segment.priceRespondentCount}`), `${segment.name}: size, spend, threshold and separate sample match prepared aggregates`);
+  }
+  assert(text("segments-insight").includes("135 of 420") && text("segments-insight").includes("€2.20") && text("segments-insight").includes("€0.01 above"), "Largest student segment is accurately described as just above the recommended price");
+  assert(text("segments-decision").includes("individual shoppers"), "Average thresholds are not claimed to establish individual reachability");
+  const expected = [["Gym & Office", "25.2%", "€1.13", "45%"], ["DTC Online", "28.3%", "€1.16", "40%"], ["Retail/Grocery", "46.4%", "€0.63", "15%"]];
+  for (const [name, reach, contribution, allocation] of expected) {
+    const card = doc.querySelector(`[data-channel="${name}"]`);
+    assert([reach, contribution, allocation].every((value) => card.textContent.includes(value)), `${name}: reach, engine contribution and allocation match reference values`);
+  }
+  assert(text("channels-price-context").includes("€1.07") && text("channels-insight").includes("55.5%") && text("channels-insight").includes("54.3%"), "Blended contribution and grocery relative economics are computed correctly");
+  assert(doc.querySelectorAll(".audience-decision h3").length === 2 && text("channels-decision").includes("less grocery shelf presence"), "Each section closes with an insight and an explicit decision");
+  assert(doc.documentElement.scrollWidth <= win.innerWidth, "Comparisons do not overflow the viewport");
+
+  const original = win.fetch;
+  const ui = await win.eval('import("/story-audiences.js")');
+  const changed = structuredClone(evidence);
+  changed.segments.find((segment) => segment.name === "Urban Wellness Professionals").monthlySpendEur = 99.99;
+  changed.segments.find((segment) => segment.name === "Students & Budget-Conscious").tooExpensiveEur = 1.99;
+  changed.channels.find((channel) => channel.name === "Retail/Grocery").respondentCount = 100;
+  changed.channels.find((channel) => channel.name === "Gym & Office").respondentCount = 201;
+  const assumptions = await (await fetch("../data/app_data/simulator_assumptions.json")).json();
+  assumptions.cogs_per_unit_eur = .72;
+  win.fetch = (url, options) => String(url).includes("strategy_evidence.json")
+    ? Promise.resolve(new win.Response(JSON.stringify(changed), { status: 200 }))
+    : String(url).includes("simulator_assumptions.json") ? Promise.resolve(new win.Response(JSON.stringify(assumptions), { status: 200 })) : original(url, options);
+  await ui.initialiseStoryAudiences();
+  assert(doc.querySelector('[data-segment="Urban Wellness Professionals"]').textContent.includes("€99.99") && text("segments-insight").includes("€0.20 below"), "Spend and threshold insight react to changed aggregates");
+  assert(doc.querySelector('[data-channel="Retail/Grocery"]').textContent.includes("23.8%") && doc.querySelector('[data-channel="Retail/Grocery"]').textContent.includes("€0.53"), "Channel reach and contributions react to changed source data and engine assumptions");
+  win.fetch = (url, options) => String(url).includes("simulator_assumptions.json") ? Promise.resolve(new win.Response("", { status: 503 })) : original(url, options);
+  await ui.initialiseStoryAudiences();
+  assert(!get("segments-results").hidden && get("channels-results").hidden && !get("retry-channels").hidden, "Engine failure leaves segment evidence usable and hides channel economics");
+  win.fetch = async () => new win.Response("{}", { status: 200 });
+  await ui.initialiseStoryAudiences();
+  assert(get("segments-results").hidden && get("channels-results").hidden && !get("retry-segments").hidden, "Malformed aggregates hide stale comparisons and offer retry");
+  win.fetch = original;
+  get("retry-segments").click();
+  get("retry-channels").click();
+  await until(() => text("segments-status") === "Segment evidence ready" && text("channels-status") === "Channel comparison ready");
+  assert(text("segments-insight").includes("€0.01 above") && text("channels-price-context").includes("€1.07"), "Retry restores original comparisons");
+  get(params.get("section") || "segments").scrollIntoView({ behavior: "instant" });
+  window.scrollTo({ top: 0, behavior: "instant" });
+  document.getElementById("report").textContent = `PASS: ${checks.length} checks\n${checks.join("\n")}`;
+} catch (error) {
+  document.getElementById("report").textContent = `FAIL: ${error.message}\n${checks.join("\n")}`;
+}
+</script>
