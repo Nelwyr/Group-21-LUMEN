@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recommendation browser checks</title>
+<style>body { margin: 0; } iframe { border: 0; display: block; width: 100%; height: 1800px; } iframe[hidden] { display: none; }</style>
+<iframe id="story" src="../index.html" title="Recommended launch strategy"></iframe>
+<iframe id="simulator" src="../simulator.html?scenario=recommended" title="Recommended simulator setting" hidden></iframe>
+<pre id="report">RUNNING</pre>
+<script type="module">
+const story = document.getElementById("story");
+const simulator = document.getElementById("simulator");
+const viewport = Number(new URLSearchParams(location.search).get("viewport"));
+if (viewport > 0) story.style.width = `${viewport}px`;
+const checks = [];
+function assert(condition, message) { if (!condition) throw new Error(message); checks.push(message); }
+async function until(test) {
+  for (let n = 0; n < 300; n++) {
+    if (test()) return;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  throw new Error("Timed out waiting for recommendation");
+}
+try {
+  await until(() => story.contentDocument.getElementById("outcome-status")?.textContent === "Recommended scenario ready"
+    && simulator.contentDocument.getElementById("simulator-status")?.textContent === "Simulator ready");
+  const win = story.contentWindow;
+  const doc = story.contentDocument;
+  const get = (id) => doc.getElementById(id);
+  const metric = (key) => doc.querySelector(`[data-outcome-metric="${key}"]`).textContent;
+  const simMetric = (key) => simulator.contentDocument.querySelector(`[data-metric="${key}"]`).textContent;
+  assert(doc.querySelectorAll(".strategy-decisions li").length === 5, "Five concise decisions are present");
+  assert(get("strategy-where").textContent.includes("27/81 (33.3%)") && !get("strategy-where").textContent.includes("highest"), "Berlin evidence is accurate without a false highest-wellness claim");
+  assert(get("strategy-who").textContent.includes("112 of 420") && get("strategy-who").textContent.includes("9.12/10") && get("strategy-who").textContent.includes("3.63/10"), "Wellness figures use full-precision segment aggregates");
+  assert(get("strategy-who").textContent.includes("€3.48") && get("strategy-evidence-note").textContent.includes("74 respondents"), "Price threshold is labelled as a mean from a separate sample");
+  assert(get("strategy-when").textContent.includes("98") && get("strategy-when").textContent.includes("118"), "April recommendation shows the May seasonal climb");
+  assert(metric("contribution") === "€1.07" && metric("ratio") === "3.45:1" && metric("payback") === "6.72 months" && metric("acceptance") === "51.7%", "Recommended figures match independently calculated reference values");
+  assert(["contribution", "ratio", "payback", "acceptance"].every((key) => metric(key) === simMetric(key)), "Story and recommended simulator show identical financial results");
+  assert(get("outcome-target").textContent === "Meets the 3:1 LTV:CAC target" && get("outcome-assumptions").textContent.includes("€44.00 CAC"), "Target and acquisition-cost assumption are explicit");
+  assert(get("outcome-tradeoff").textContent.includes("10 percentage points") && get("outcome-tradeoff").textContent.includes("46.4%"), "Acceptance and grocery reach sacrifices are quantified");
+  assert(["€1.13", "€1.16", "€0.63", "9.77"].every((value) => get("outcome-tradeoff").textContent.includes(value)), "Channel margins and lower-price payback are calculated from the same engine");
+  assert(doc.querySelector(".outcome-limitation").textContent.includes("not a proven optimum"), "Three-price-point limitation is explicit");
+  assert(new URL(doc.querySelector('.home-actions a').href).search === "?scenario=recommended", "Outcome links to the shared recommended simulator inputs");
+  assert(doc.documentElement.scrollWidth <= win.innerWidth, "Recommendation fits the viewport without horizontal overflow");
+
+  const originalFetch = win.fetch;
+  const originalSimFetch = simulator.contentWindow.fetch;
+  const assumptions = await (await originalFetch("../data/app_data/simulator_assumptions.json")).json();
+  const altered = { ...assumptions, cogs_per_unit_eur: 0.9 };
+  function alteredFetch(original, context) {
+    return (url, options) => String(url).includes("simulator_assumptions.json")
+      ? Promise.resolve(new context.Response(JSON.stringify(altered), { status: 200 })) : original(url, options);
+  }
+  win.fetch = alteredFetch(originalFetch, win);
+  simulator.contentWindow.fetch = alteredFetch(originalSimFetch, simulator.contentWindow);
+  const storyUi = await win.eval('import("/story-recommendation.js")');
+  const simUi = await simulator.contentWindow.eval('import("/simulator-ui.js")');
+  await storyUi.initialiseStoryRecommendation();
+  await simUi.initialiseSimulator();
+  assert(metric("contribution") !== "€1.07" && ["contribution", "ratio", "payback", "acceptance"].every((key) => metric(key) === simMetric(key)), "Changing engine assumptions changes both pages identically; results are not hardcoded");
+  assert(get("outcome-target").dataset.state === "fail", "Outcome accurately shows when updated assumptions miss the target");
+  win.fetch = async () => new win.Response("", { status: 503 });
+  await storyUi.initialiseStoryRecommendation();
+  assert(metric("contribution") === "—" && get("outcome-target").textContent === "" && !get("retry-recommendation").hidden, "Load failure removes stale figures and offers retry");
+  win.fetch = async () => new win.Response("{}", { status: 200 });
+  await storyUi.initialiseStoryRecommendation();
+  assert(metric("ratio") === "—", "Malformed successful responses cannot publish financial claims");
+  win.fetch = originalFetch;
+  simulator.contentWindow.fetch = originalSimFetch;
+  get("retry-recommendation").click();
+  await until(() => get("outcome-status").textContent === "Recommended scenario ready");
+  assert(metric("contribution") === "€1.07" && get("retry-recommendation").hidden, "Retry restores the recommended outcome");
+  if (new URLSearchParams(location.search).get("section") === "outcome") get("outcome").scrollIntoView({ behavior: "instant" });
+  window.scrollTo({ top: 0, behavior: "instant" });
+  document.getElementById("report").textContent = `PASS: ${checks.length} checks\n${checks.join("\n")}`;
+} catch (error) {
+  document.getElementById("report").textContent = `FAIL: ${error.message}\n${checks.join("\n")}`;
+}
+</script>

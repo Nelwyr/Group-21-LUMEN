@@ -33,6 +33,19 @@
       <h1 class="sr-only">Germany launch strategy</h1>
       <section id="strategy" class="story-section" aria-labelledby="strategy-title">
         <h2 id="strategy-title">Strategy</h2>
+        <p class="recommendation">Berlin first. A focused launch before the seasonal climb.</p>
+        <ul class="strategy-decisions">
+          <li><strong>WHERE</strong><span id="strategy-where">Berlin — loading supporting evidence…</span></li>
+          <li><strong>WHO</strong><span id="strategy-who">Urban Wellness Professionals — loading supporting evidence…</span></li>
+          <li><strong>CHANNELS</strong><span id="strategy-channels">Gym &amp; Office 45% · DTC Online 40% · Retail/Grocery 15%</span></li>
+          <li><strong>PRICE</strong><span id="strategy-price">€2.19 per 330ml can</span></li>
+          <li><strong>WHEN</strong><span id="strategy-when">April, before the seasonal climb — loading supporting evidence…</span></li>
+        </ul>
+        <p class="input-help">Regional shares and growth are illustrative case assumptions. Survey figures describe synthetic samples, not measured German demand.</p>
+        <p id="strategy-evidence-note" class="input-help"></p>
+        <p id="recommendation-status" class="input-help" role="status">Loading recommendation evidence…</p>
+        <button id="retry-recommendation" class="button button-secondary" type="button" hidden>Retry loading</button>
+        <noscript><p class="validation-message">Enable JavaScript to load the supporting evidence and calculate the recommended outcome.</p></noscript>
       </section>
       <section id="segments" class="story-section" aria-labelledby="segments-title">
         <h2 id="segments-title">Segments</h2>
@@ -51,6 +64,27 @@
       </section>
       <section id="outcome" class="story-section" aria-labelledby="outcome-title">
         <h2 id="outcome-title">Outcome</h2>
+        <article class="panel outcome-panel" aria-labelledby="so-what-title">
+          <p class="eyebrow">The recommended setting</p>
+          <h3 id="so-what-title">SO WHAT?</h3>
+          <p id="outcome-setting">€2.19 · Gym &amp; Office 45% · DTC Online 40% · Retail/Grocery 15%</p>
+          <div class="metric-grid" aria-label="Recommended scenario results" aria-live="polite" aria-atomic="true">
+            <div><span>Blended unit contribution</span><strong data-outcome-metric="contribution">—</strong></div>
+            <div><span>LTV : CAC</span><strong data-outcome-metric="ratio">—</strong></div>
+            <div><span>Acquisition payback</span><strong data-outcome-metric="payback">—</strong></div>
+            <div><span>Estimated acceptance</span><strong data-outcome-metric="acceptance">—</strong></div>
+          </div>
+          <p id="outcome-target" class="target-status"></p>
+          <p id="outcome-assumptions" class="input-help"></p>
+          <p class="input-help">Scenario estimates use the simulator’s purchase-frequency and customer-lifetime assumptions. They are not observed German sales or retention.</p>
+          <p id="outcome-status" class="input-help" role="status">Loading the recommended scenario…</p>
+        </article>
+        <div class="decision-note outcome-tradeoff">
+          <h3>The trade-off we accept</h3>
+          <p id="outcome-tradeoff">The acceptance, channel-margin and payback comparison will appear when the prepared data loads.</p>
+        </div>
+        <p class="outcome-limitation"><strong>Only three price points were tested.</strong> €2.19 is our best tested price for the chosen balance of acceptance and contribution, not a proven optimum. €2.59 produces higher contribution and faster modelled payback, but estimated acceptance falls sharply.</p>
+        <div class="home-actions"><a class="button button-primary" href="simulator.html?scenario=recommended">Explore this setting in the simulator</a></div>
       </section>
     </main>
 

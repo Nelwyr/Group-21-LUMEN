@@ -26,17 +26,18 @@ async function until(test) {
 }
 try {
   await until(() => frame.contentDocument.querySelector('[href="#city"][aria-current="location"]'));
+  await until(() => frame.contentDocument.getElementById("outcome-status")?.textContent === "Recommended scenario ready");
   const win = frame.contentWindow;
   const doc = frame.contentDocument;
   const ids = ["strategy", "segments", "channels", "price", "city", "timing", "outcome"];
   const header = doc.querySelector(".story-header");
   const active = () => doc.querySelector("[data-section-link][aria-current]")?.hash;
   assert([...doc.querySelectorAll("main section")].map((s) => s.id).join() === ids.join(), "Seven story sections appear in the requested order");
-  assert(ids.every((id) => doc.getElementById(id).children.length === 1 && doc.getElementById(id).firstElementChild.tagName === "H2"), "Story sections contain headings only");
+  assert(ids.slice(1, -1).every((id) => doc.getElementById(id).children.length === 1 && doc.getElementById(id).firstElementChild.tagName === "H2"), "Middle five sections remain headings only");
   assert(doc.getElementById("city").getBoundingClientRect().top >= header.getBoundingClientRect().bottom, "Direct city link clears the sticky navbar");
   assert(win.getComputedStyle(doc.documentElement).scrollBehavior === (win.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"), "Scroll behavior respects the current motion preference");
   assert(doc.documentElement.scrollWidth <= win.innerWidth, "Navbar fits the viewport without horizontal overflow");
-  assert(!win.performance.getEntriesByType("resource").some((entry) => entry.name.includes("/data/")), "Empty story shell fetches no data");
+  assert(win.performance.getEntriesByType("resource").filter((entry) => entry.name.includes("/data/")).every((entry) => entry.name.includes("/data/app_data/")), "Story loads only prepared application data");
   for (const id of [...ids, ...ids.slice().reverse()]) {
     doc.getElementById(id).scrollIntoView({ behavior: "instant" });
     await until(() => active() === `#${id}`);
