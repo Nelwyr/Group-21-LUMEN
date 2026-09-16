@@ -56,7 +56,7 @@ try {
   assert(doc.querySelectorAll('[name="position-segment"]').length === 4 && text("position-audience").includes(wellness), "Four prominent segment choices default to Wellness");
   assert(card("Root & Rise").textContent.includes("65% awareness") && card("PulsUp").textContent.includes("35% awareness"), "Wellness shows the requested 65% versus 35% contrast");
   assert(el("lumen-price-line").getAttribute("y1") === "64" && el("lumen-price-line").getAttribute("y2") === "354" && doc.querySelectorAll(".position-dot").length === 4, "LUMEN has a full-height line, with dots only for four competitors");
-  assert(text("position-assessment").includes("€0.08 below VoltFit"), "Default simulator price is compared to the nearest listed retail price");
+  assert(text("position-assessment").includes("€0.18 below VoltFit"), "Default simulator price is compared to the nearest listed retail price");
   const rootX = dot("Root & Rise").getAttribute("cx"), rootWellnessY = dot("Root & Rise").getAttribute("cy");
   const originalLineX = el("lumen-price-line").getAttribute("x1");
   segment(students);

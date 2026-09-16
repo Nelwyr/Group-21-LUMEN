@@ -1,5 +1,5 @@
 import { loadSimulatorEngine } from "./simulator-engine.js";
-import { RECOMMENDED_SCENARIO } from "./recommendation.js";
+import { PRIORITY_SEGMENTS, RECOMMENDED_SCENARIO } from "./recommendation.js";
 import { rankCities } from "./city-engine.js";
 import { assessLaunch, validateLaunchData } from "./launch-window.js";
 
@@ -32,7 +32,7 @@ export async function initialiseStoryRecommendation() {
         loadSimulatorEngine(), loadPrepared("strategy_evidence"),
         loadPrepared("city_prioritisation"), loadPrepared("launch_window"),
       ]);
-      const wellness = evidence.segments.find((segment) => segment.name === "Urban Wellness Professionals");
+      const priorities = PRIORITY_SEGMENTS.map((name) => evidence.segments.find((segment) => segment.name === name));
       const berlin = cityData.cities.find((city) => city.city === "Berlin");
       const munich = cityData.cities.find((city) => city.city === "Munich");
       const april = timing.months.find((month) => month.month === 4);
@@ -41,8 +41,9 @@ export async function initialiseStoryRecommendation() {
       const affordable = calculate({ ...scenario, priceEur: 1.79 });
       const values = [result.contributionPerUnitEur, result.ltvCacRatio, result.paybackMonths,
         result.acceptancePct, result.targetLtvCacRatio, affordable.paybackMonths, affordable.acceptancePct,
-        wellness?.respondentCount, wellness?.purchaseIntent, wellness?.priceSensitivity, wellness?.tooExpensiveEur,
-        wellness?.priceRespondentCount, evidence.respondentCount, evidence.groceryRespondentCount,
+        ...priorities.flatMap((segment) => [segment?.respondentCount, segment?.purchaseIntent,
+          segment?.priceSensitivity, segment?.tooExpensiveEur, segment?.priceRespondentCount]),
+        evidence.respondentCount, evidence.groceryRespondentCount,
         berlin?.marketSizeEur, berlin?.growth, berlin?.wellnessRespondentCount, berlin?.respondentCount,
         munich?.marketSizeEur, munich?.growth, munich?.wellnessDensity, cityData.nationalMarketEur,
         april?.demandIndex, may?.demandIndex];
@@ -53,8 +54,7 @@ export async function initialiseStoryRecommendation() {
         ? `the same ${number.format(berlin.growth * 100)}% growth`
         : `${number.format(berlin.growth * 100)}% vs ${number.format(munich.growth * 100)}% growth`;
       get("strategy-where").textContent = `Berlin — ${share(berlin)}% assumed regional market share vs Munich’s ${share(munich)}%, ${growth}; wellness respondents ${berlin.wellnessRespondentCount}/${berlin.respondentCount} (${oneDecimal.format(berlin.wellnessRespondentCount / berlin.respondentCount * 100)}%) vs Munich’s ${oneDecimal.format(munich.wellnessDensity * 100)}%.`;
-      const highestThreshold = evidence.segments.every((segment) => segment.tooExpensiveEur <= wellness.tooExpensiveEur);
-      get("strategy-who").textContent = `Urban Wellness Professionals — ${wellness.respondentCount} of ${evidence.respondentCount} respondents; intent ${number.format(wellness.purchaseIntent)}/10; price sensitivity ${number.format(wellness.priceSensitivity)}/10; ${highestThreshold ? "highest segment average " : "average "}“too expensive” threshold ${money.format(wellness.tooExpensiveEur)}, ${money.format(wellness.tooExpensiveEur - scenario.priceEur)} above our price.`;
+      get("strategy-who").textContent = priorities.map((segment) => `${segment.name} — ${segment.respondentCount} of ${evidence.respondentCount} respondents; intent ${number.format(segment.purchaseIntent)}/10; price sensitivity ${number.format(segment.priceSensitivity)}/10; mean “too expensive” threshold ${money.format(segment.tooExpensiveEur)}.`).join(" ");
       get("strategy-when").textContent = `April, before the seasonal climb — demand index ${number.format(april.demandIndex)}, rising to ${number.format(may.demandIndex)} in May (baseline ${number.format(timing.indexBaseline)}).`;
       const baseline = rankCities(cityData.cities);
       const wellnessLeader = [...baseline].sort((a, b) => b.wellnessDensity - a.wellnessDensity)[0];
@@ -62,7 +62,7 @@ export async function initialiseStoryRecommendation() {
       const aprilAssessment = assessLaunch(validateLaunchData(timing), 4);
       const septemberAssessment = assessLaunch(timing, 9);
       get("timing-insight").textContent = `April starts at demand index ${number.format(april.demandIndex)}, before May’s ${number.format(may.demandIndex)}. The first-three-month average is ${number.format(aprilAssessment.firstThreeAverage)} for April versus ${number.format(septemberAssessment.firstThreeAverage)} for September. The wait for a strong-demand test is ${aprilAssessment.wait} month for April versus ${septemberAssessment.wait} months for September, using the existing index-${number.format(timing.demandTestThreshold)} rule. These are seasonal comparisons, not sales forecasts.`;
-      get("strategy-evidence-note").textContent = `Evidence: market context (Exhibit 1), customer survey (Exhibit 4), price-sensitivity survey (Exhibit 10) and seasonality (Exhibit 12). The wellness price threshold is a mean from a separate sample of ${wellness.priceRespondentCount} respondents; it is not a guaranteed willingness to pay.`;
+      get("strategy-evidence-note").textContent = `Evidence: market context (Exhibit 1), customer survey (Exhibit 4), price-sensitivity survey (Exhibit 10) and seasonality (Exhibit 12). Price thresholds are means from separate samples: ${priorities.map((segment) => `${segment.name}, ${segment.priceRespondentCount} respondents`).join("; ")}. They are not guaranteed willingness to pay.`;
 
       const metrics = {
         contribution: money.format(result.contributionPerUnitEur),
@@ -87,7 +87,7 @@ export async function initialiseStoryRecommendation() {
       get("outcome-assumptions").textContent = "";
       get("outcome-tradeoff").textContent = "Comparison unavailable until the prepared data loads.";
       get("strategy-where").textContent = "Berlin — supporting evidence unavailable.";
-      get("strategy-who").textContent = "Urban Wellness Professionals — supporting evidence unavailable.";
+      get("strategy-who").textContent = `${PRIORITY_SEGMENTS.join(" and ")} — supporting evidence unavailable.`;
       get("strategy-when").textContent = "April, before the seasonal climb — supporting evidence unavailable.";
       get("strategy-evidence-note").textContent = "";
       get("city-insight").textContent = "Recommendation evidence unavailable. Retry loading in Strategy; city ranking has its own data status above.";

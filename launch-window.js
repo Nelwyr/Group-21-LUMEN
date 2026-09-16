@@ -29,16 +29,18 @@ export function assessLaunch(data, month) {
 
 function tradeoff(result) {
   const month = MONTHS[result.selected.month - 1];
-  if (result.selected.month === 4) {
-    return "April puts the product on shelf before the climb, with one month to learn before May’s strong-demand window. The cost: commit inventory, distribution and launch spend early, with little time to fix the offer before demand accelerates.";
-  }
-  if (result.selected.month === 9) {
-    return "September offers a quieter market after the summer peak: learn cheaply with a deliberately small pilot. The cost is eight months of waiting, until May next year, for the first real demand test. Quiet-season results may understate summer potential; stock, team time and cash must bridge the gap.";
-  }
   if (result.wait === 0) {
     return `${month} starts inside the strong-demand window, so the first real demand test begins immediately. The cost: little quiet-market rehearsal before customers arrive; availability and execution must be ready at launch. Strong seasonal sales alone do not prove year-round demand.`;
   }
-  return `${month} gives ${result.wait} ${result.wait === 1 ? "month" : "months"} to learn before ${result.testMonth}${result.nextYear ? " next year" : ""}. A small pilot can limit spend while the team adjusts the offer. The cost: cash, stock and team time are committed before a strong-demand test, and quieter trading may understate summer potential.`;
+  const wait = `${result.wait} ${result.wait === 1 ? "month" : "months"}`;
+  const testMonth = `${result.testMonth}${result.nextYear ? " next year" : ""}`;
+  if (result.selected.month === 4) {
+    return `April puts the product on shelf before the climb, with ${wait} to learn before the strong-demand window in ${testMonth}. The cost: commit inventory, distribution and launch spend early, with little time to fix the offer before demand accelerates.`;
+  }
+  if (result.selected.month === 9) {
+    return `September offers a quieter market after the summer peak: learn cheaply with a deliberately small pilot. The cost is ${wait} of waiting, until ${testMonth}, for the first real demand test. Quiet-season results may understate summer potential; stock, team time and cash must bridge the gap.`;
+  }
+  return `${month} gives ${wait} to learn before ${testMonth}. A small pilot can limit spend while the team adjusts the offer. The cost: cash, stock and team time are committed before a strong-demand test, and quieter trading may understate summer potential.`;
 }
 
 function chart(data, chosen) {

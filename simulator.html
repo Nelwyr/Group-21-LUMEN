@@ -85,27 +85,27 @@
                 <div class="control-grid">
                   <label for="price">Retail price (€)
                     <span>Acceptance tested from €1.79 to €2.59</span>
-                    <input id="price" name="price" type="number" min="0.01" step="0.01" value="2.29" required>
+                    <input id="price" name="price" type="number" min="0.01" step="0.01" required>
                   </label>
                   <label for="budget">Marketing budget (€)
                     <span>Total acquisition spend</span>
-                    <input id="budget" name="budget" type="number" min="0.01" step="0.01" value="120000" required>
+                    <input id="budget" name="budget" type="number" min="0.01" step="0.01" required>
                   </label>
                   <label for="cac">CAC (€ / acquired customer)
                     <span id="cac-help">Customer acquisition cost: the average marketing spend to acquire one new customer. Enter your assumed cost per customer.</span>
-                    <input id="cac" name="cac" type="number" min="0.01" step="0.01" value="44" aria-describedby="cac-help" required>
+                    <input id="cac" name="cac" type="number" min="0.01" step="0.01" aria-describedby="cac-help" required>
                   </label>
                 </div>
                 <fieldset class="channel-mix">
                   <legend>Channel mix · share of units (%)</legend>
                   <div class="control-grid">
-                    <label for="mix-dtc">DTC Online<input id="mix-dtc" type="number" min="0" max="100" step="0.1" value="40" required></label>
-                    <label for="mix-retail">Retail/Grocery<input id="mix-retail" type="number" min="0" max="100" step="0.1" value="30" required></label>
-                    <label for="mix-gym">Gym &amp; Office<input id="mix-gym" type="number" min="0" max="100" step="0.1" value="30" required></label>
+                    <label for="mix-dtc">DTC Online<input id="mix-dtc" type="number" min="0" max="100" step="0.1" required></label>
+                    <label for="mix-retail">Retail/Grocery<input id="mix-retail" type="number" min="0" max="100" step="0.1" required></label>
+                    <label for="mix-gym">Gym &amp; Office<input id="mix-gym" type="number" min="0" max="100" step="0.1" required></label>
                   </div>
                   <p id="mix-total" class="input-help">Total: 100%. Shares must add up to 100%.</p>
                 </fieldset>
-                <p id="recommended-channel-mix" class="input-help"><strong>Our recommended channel mix:</strong><br>45% Gym &amp; Office · 40% DTC Online · 15% Retail/Grocery.</p>
+                <p id="recommended-channel-mix" class="input-help"><strong>Our recommended channel mix:</strong><br><span id="recommended-channel-values">Loading recommendation…</span></p>
               </fieldset>
               <p id="scenario-error" class="validation-message" role="alert" hidden></p>
               <button id="retry-simulator" class="button button-secondary" type="button" hidden>Retry loading</button>
@@ -126,7 +126,7 @@
                 <div><span>Estimated acceptance</span><strong data-metric="acceptance">—</strong></div>
                 <div><span>Expected customers acquired</span><strong data-metric="customers">—</strong></div>
                 <div><span>Contribution LTV</span><strong data-metric="ltv">—</strong></div>
-                <div><span>Gap to 3:1 target</span><strong data-metric="gap">—</strong></div>
+                <div><span id="target-gap-label">Gap to return target</span><strong data-metric="gap">—</strong></div>
               </div>
               <p id="target-status" class="target-status"></p>
               <p id="scenario-warning" class="validation-message" hidden></p>
@@ -139,7 +139,7 @@
               <summary>How to read these results</summary>
               <p>Clients acquired = budget / CAC. Acceptance is a separate survey estimate; it is not applied a second time to customer acquisition. Increasing budget scales customers, not per-customer returns.</p>
               <p>LTV and payback assume stable monthly purchases and an extrapolated customer lifetime calibrated from the historical LTV treated as net revenue. These are scenario assumptions, not observed German retention.</p>
-              <p>The leadership assessment uses €2.19 as a premium-price proxy for Jonas and the 3:1 return target for Elena. It does not measure brand perception or prove a launch recommendation. Under a fixed lifetime, LTV:CAC and payback are mathematically linked.</p>
+              <p>The leadership assessment uses €2.19 as a premium-price proxy for Jonas and the <span data-return-target>—</span> return target for Elena. It does not measure brand perception or prove a launch recommendation. Under a fixed lifetime, LTV:CAC and payback are mathematically linked.</p>
             </details>
           </section>
         </div>

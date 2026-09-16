@@ -31,9 +31,9 @@ try {
   }
   assert(!doc.getElementById("simulator").hidden, "Hash route opens simulator");
   assert(doc.querySelector('[data-route-link="simulator"]').getAttribute("aria-current") === "page", "Active navigation is accessible");
-  assert(metric("contribution") === "€1.07" && metric("ratio") === "3.47:1", "Balanced scenario matches agreed contribution and ratio");
-  assert(metric("acceptance") === "45.45%" && metric("payback") === "6.69 months", "Balanced interpolation and payback match");
-  assert(metric("customers") === "2,727.27" && metric("gap") === "+0.47×", "Balanced acquisition and target gap match");
+  assert(metric("contribution") === "€1.07" && metric("ratio") === "3.45:1", "Recommended scenario matches agreed contribution and ratio");
+  assert(metric("acceptance") === "51.7%" && metric("payback") === "6.72 months", "Recommended acceptance and payback match");
+  assert(metric("customers") === "2,727.27" && metric("gap") === "+0.45×", "Recommended acquisition and target gap match");
   assert(text("scenario-tradeoff").includes("Jonas") && text("scenario-tradeoff").includes("Elena") && text("scenario-tradeoff").includes("giving up"), "Trade-off names both leaders and the sacrifice");
 
   set({ price: 2.59, "mix-dtc": 50, "mix-retail": 20, "mix-gym": 30, budget: 150000, cac: 50 });
@@ -72,6 +72,14 @@ try {
   const ui = await win.eval('import("/simulator-ui.js")');
   await ui.initialiseSimulator();
   assert(text("simulator-status") === "Simulator unavailable" && doc.getElementById("scenario-controls").disabled, "Loading failure disables controls and shows explicit state");
+  const assumptions = await (await fetchOriginal("data/app_data/simulator_assumptions.json")).json();
+  win.fetch = async () => new win.Response(JSON.stringify({ ...assumptions, target_ltv_cac_ratio: 4 }), { status: 200 });
+  doc.getElementById("retry-simulator").click();
+  await until(() => text("simulator-status") === "Simulator ready");
+  assert(text("target-status") === "Below the 4:1 target" && metric("gap") === "-0.55×", "Changed target updates status and gap together");
+  assert(text("target-gap-label") === "Gap to 4:1 target" && [...doc.querySelectorAll("[data-return-target]")].every((node) => node.textContent === "4:1") && text("scenario-tradeoff").includes("4:1 return target"), "Changed target updates labels, model notes and premium trade-off");
+  set({ price: 1.79 });
+  assert(text("scenario-tradeoff").includes("4:1 return target"), "Changed target also updates affordability trade-off");
   win.fetch = fetchOriginal;
   doc.getElementById("retry-simulator").click();
   await until(() => text("simulator-status") === "Simulator ready");

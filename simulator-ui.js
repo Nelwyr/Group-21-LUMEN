@@ -13,6 +13,7 @@ export function describeTradeoff(result, input, calculate) {
   const payback = result.contributionPerUnitEur > 0
     ? `${number.format(result.paybackMonths)} months` : "no payback";
   const ratio = `${number.format(result.ltvCacRatio)}:1`;
+  const returnTarget = `${number.format(result.targetLtvCacRatio)}:1`;
   if (premium) {
     const affordable = calculate({ ...input, priceEur: 1.79 });
     const loss = Math.max(0, affordable.acceptancePct - result.acceptancePct);
@@ -20,7 +21,7 @@ export function describeTradeoff(result, input, calculate) {
     if (result.ltvCacTargetMet) {
       return `This setting serves Jonas's premium-price positioning and supports Elena's return objective (${ratio}, ${payback} payback), while ${sacrifice}.`;
     }
-    return `This setting serves Jonas's premium-price positioning, while ${sacrifice} and missing Elena's 3:1 return target (${ratio}, ${payback} payback).`;
+    return `This setting serves Jonas's premium-price positioning, while ${sacrifice} and missing Elena's ${returnTarget} return target (${ratio}, ${payback} payback).`;
   }
   const premiumReference = calculate({ ...input, priceEur: 2.59 });
   const forgone = premiumReference.contributionPerUnitEur - result.contributionPerUnitEur;
@@ -28,7 +29,7 @@ export function describeTradeoff(result, input, calculate) {
   if (result.ltvCacTargetMet) {
     return `This setting serves Elena's return objective (${ratio}, ${payback} payback), while ${sacrifice} in pursuit of broader acceptance.`;
   }
-  return `This setting serves neither Jonas's premium-price objective nor Elena's 3:1 return target (${ratio}, ${payback}); it prioritises affordability, ${sacrifice}.`;
+  return `This setting serves neither Jonas's premium-price objective nor Elena's ${returnTarget} return target (${ratio}, ${payback}); it prioritises affordability, ${sacrifice}.`;
 }
 
 export async function initialiseSimulator() {
@@ -42,14 +43,14 @@ export async function initialiseSimulator() {
   const retry = document.getElementById("retry-simulator");
   const total = document.getElementById("mix-total");
   const inputs = [...form.querySelectorAll("input")];
-  if (new URLSearchParams(window.location.search).get("scenario") === "recommended") {
-    const setting = RECOMMENDED_SCENARIO;
-    const recommendedValues = { price: setting.priceEur, budget: setting.marketingBudgetEur, cac: setting.cacEur,
-      "mix-dtc": setting.channelMix["DTC Online"] * 100,
-      "mix-retail": setting.channelMix["Retail/Grocery"] * 100,
-      "mix-gym": setting.channelMix["Gym & Office"] * 100 };
-    Object.entries(recommendedValues).forEach(([id, value]) => { document.getElementById(id).value = value; });
-  }
+  const setting = RECOMMENDED_SCENARIO;
+  const recommendedValues = { price: setting.priceEur, budget: setting.marketingBudgetEur, cac: setting.cacEur,
+    "mix-dtc": setting.channelMix["DTC Online"] * 100,
+    "mix-retail": setting.channelMix["Retail/Grocery"] * 100,
+    "mix-gym": setting.channelMix["Gym & Office"] * 100 };
+  Object.entries(recommendedValues).forEach(([id, value]) => { document.getElementById(id).value = value; });
+  document.getElementById("recommended-channel-values").textContent = ["Gym & Office", "DTC Online", "Retail/Grocery"]
+    .map((channel) => `${number.format(setting.channelMix[channel] * 100)}% ${channel}`).join(" · ");
   let calculate;
 
   function clearResults(message) {
@@ -95,7 +96,10 @@ export async function initialiseSimulator() {
       Object.entries(values).forEach(([key, text]) => {
         document.querySelector(`[data-metric="${key}"]`).textContent = text;
       });
-      target.textContent = result.ltvCacTargetMet ? "Meets the 3:1 target" : "Below the 3:1 target";
+      const returnTarget = `${number.format(result.targetLtvCacRatio)}:1`;
+      document.getElementById("target-gap-label").textContent = `Gap to ${returnTarget} target`;
+      document.querySelectorAll("[data-return-target]").forEach((element) => { element.textContent = returnTarget; });
+      target.textContent = `${result.ltvCacTargetMet ? "Meets" : "Below"} the ${returnTarget} target`;
       target.dataset.state = result.ltvCacTargetMet ? "pass" : "fail";
       const warnings = [];
       if (result.acceptanceRangeStatus.startsWith("clamped")) {
