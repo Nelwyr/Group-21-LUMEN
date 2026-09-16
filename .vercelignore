@@ -1,0 +1,7 @@
+# Raw case exhibits stay in Git, but must not be uploaded or served by Vercel.
+# This matches only CSVs directly inside data/, including both respondent surveys.
+data/*.csv
+
+# Keep all prepared application inputs available to the deployed app.
+!data/app_data/
+!data/app_data/**
