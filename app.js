@@ -4,10 +4,11 @@ import { initialiseLaunchWindow } from "./launch-window.js";
 import { initialisePricePositioning } from "./price-positioning.js";
 
 const routes = new Set(["home", "simulator", "cities"]);
+const defaultRoute = document.body.dataset.defaultRoute || "home";
 
 function currentRoute() {
   const route = window.location.hash.replace("#", "");
-  return routes.has(route) ? route : "home";
+  return routes.has(route) ? route : defaultRoute;
 }
 
 function renderRoute() {
@@ -25,7 +26,7 @@ function renderRoute() {
 window.addEventListener("hashchange", renderRoute);
 window.addEventListener("DOMContentLoaded", () => {
   if (!window.location.hash || !routes.has(window.location.hash.slice(1))) {
-    window.location.hash = "#home";
+    window.history.replaceState(null, "", `#${defaultRoute}`);
   }
   renderRoute();
   initialiseCities();
