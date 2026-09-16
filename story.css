@@ -59,6 +59,10 @@
   .price-choice-metrics div, .price-choice-metrics div:nth-child(2n) { border-right: 0; border-bottom: 1px solid var(--line); }
   .price-choice-metrics div:last-child { border-bottom: 0; }
   .price-choices .position-segment { padding: .8rem .4rem; gap: .3rem; }
+  .price-choices .position-segment { flex-wrap: wrap; }
+  .price-choices .position-segment > span { flex-basis: 100%; }
+  .price-comparison-table { min-width: 0; table-layout: fixed; font-size: .75rem; }
+  .price-comparison-table th, .price-comparison-table td { padding: .5rem .25rem; overflow-wrap: anywhere; }
 }
 
 @media (max-width: 1100px) {
