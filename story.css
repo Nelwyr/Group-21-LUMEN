@@ -47,6 +47,8 @@
 .audience-card dd { margin: .3rem 0 0; font-weight: 650; }
 .audience-decision { margin-top: 1.5rem; }
 .audience-decision p + p { margin-top: .75rem; }
+#cities .view-header { margin-top: 1.5rem; }
+#timing .launch-panel { margin-top: 1.5rem; }
 @media (max-width: 1000px) { .segment-comparison { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .segment-comparison, .channel-comparison { grid-template-columns: 1fr; } }
 .price-choice-controls { margin: 1.5rem 0 0; padding: 0; border: 0; }

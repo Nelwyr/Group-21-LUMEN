@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>City prioritisation browser checks</title>
 <style>body { margin: 0; } iframe { border: 0; width: 100%; height: 2000px; }</style>
-<iframe id="app" src="../simulator.html#cities" title="City prioritisation under test"></iframe>
+<iframe id="app" src="../index.html#city" title="City prioritisation under test"></iframe>
 <pre id="report">RUNNING</pre>
 <script type="module">
 import { rankCities, reliabilityLabel } from "../city-engine.js";
@@ -45,6 +45,7 @@ try {
   assert(JSON.stringify(rankCities(data.cities)) === JSON.stringify(baseline), "Changing segment diagnostics cannot change scores");
 
   await until(() => frame.contentDocument.getElementById("city-status")?.textContent === "City data ready");
+  await until(() => frame.contentDocument.getElementById("outcome-status")?.textContent === "Recommended scenario ready");
   const win = frame.contentWindow;
   const doc = frame.contentDocument;
   const get = (id) => doc.getElementById(id);
@@ -53,11 +54,14 @@ try {
     ["marketSizeEur", "growth", "wellnessDensity"].forEach((key, index) => { get(`weight-${key}`).value = values[index]; });
     get("city-form").dispatchEvent(new win.Event("input", { bubbles: true }));
   }
-  assert(!get("cities").hidden && get("city-results").hidden === false && order().length === 5, "Cities hash opens fully loaded ranking");
+  assert(!get("cities").hidden && get("city-results").hidden === false && order().length === 5, "Story City anchor contains the fully loaded ranking");
+  const recommendation = get("city-insight").textContent;
+  assert(recommendation.includes("18%") && recommendation.includes("15%") && recommendation.includes("95.6/100"), "Berlin decision uses prepared inputs and the existing equal-weight calculation");
   setWeights([0, 0, 100]);
   assert(order()[0] === "Cologne" && get("city-ranking-summary").textContent.includes("Cologne ranks first"), "Sliders visibly change leader to Cologne");
   assert(doc.querySelector('#city-ranking-body tr[data-city="Cologne"] .rank-change').textContent === "↑ 2", "Rank movement is measured against equal weights");
   assert(get("share-wellnessDensity").textContent === "100%", "Displayed weights normalise to selected importance");
+  assert(get("city-insight").textContent === recommendation, "Sensitivity analysis preserves the stated launch decision");
   setWeights([0, 100, 0]);
   assert(get("city-ranking-summary").textContent.includes("Berlin and Munich tie"), "UI announces shared growth lead");
   setWeights([0, 0, 0]);
@@ -70,9 +74,9 @@ try {
   assert(cards.length === 4 && cards.every((card) => card.querySelector(".reliability").textContent.includes("n=")), "Every segment carries sample count and reliability");
   assert(cards.filter((card) => card.textContent.includes("Insufficient")).every((card) => !card.textContent.includes("Purchase intent:")), "Insufficient segment intent is withheld");
   assert(get("city-survey-summary").textContent.includes("n=32") && get("city-survey-summary").textContent.includes("6 of 32"), "Wellness proxy uses all city respondents as denominator");
-  win.location.hash = "#simulator";
-  await until(() => !get("simulator").hidden);
-  win.location.hash = "#cities";
+  win.location.hash = "#price";
+  await until(() => win.location.hash === "#price");
+  win.location.hash = "#city";
   await until(() => !get("cities").hidden);
   assert(get("city-diagnostic-select").value === "Frankfurt", "Diagnostics selection survives navigation");
   assert(doc.documentElement.scrollWidth <= win.innerWidth, "Layout does not overflow viewport; table scroll is contained");
@@ -87,6 +91,8 @@ try {
   get("retry-cities").click();
   await until(() => get("city-status").textContent === "City data ready");
   assert(!get("city-controls").disabled && !get("city-results").hidden, "Retry recovers city screen");
+  get("city").scrollIntoView({ behavior: "instant" });
+  window.scrollTo({ top: 0, behavior: "instant" });
   report.textContent = `PASS: ${checks.length} browser checks\n${checks.join("\n")}`;
 } catch (error) {
   report.textContent = `FAIL: ${error.stack}\nPassed: ${checks.join("\n")}`;

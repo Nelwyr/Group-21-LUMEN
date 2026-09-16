@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <title>Launch window browser checks</title>
 <style>body { margin: 0; } iframe { border: 0; display: block; }</style>
-<iframe id="app" src="../simulator.html#simulator" width="1200" height="1600"></iframe>
+<iframe id="app" src="../index.html#timing" width="1200" height="1600"></iframe>
 <pre id="report">RUNNING</pre>
 <script type="module">
 import { assessLaunch, validateLaunchData } from "../launch-window.js";
@@ -31,6 +31,7 @@ try {
     assert(rejected, "Incomplete or unusable monthly inputs are rejected");
   }
   await until(() => frame.contentDocument.getElementById("launch-status")?.textContent === "Launch context ready");
+  await until(() => frame.contentDocument.getElementById("outcome-status")?.textContent === "Recommended scenario ready");
   const doc = frame.contentDocument, win = frame.contentWindow;
   const el = (id) => doc.getElementById(id);
   const text = (id) => el(id).textContent;
@@ -38,26 +39,29 @@ try {
   assert(text("launch-tradeoff").includes("on shelf before the climb") && text("launch-tradeoff").includes("commit inventory"), "April explains readiness benefit and early commitment cost");
   assert(doc.querySelectorAll(".launch-bar").length === 12 && doc.querySelectorAll(".launch-selected").length === 1, "Chart shows all months with one selected launch");
   assert(doc.querySelectorAll(".launch-temperature").length === 12 && doc.querySelectorAll("#launch-data-body tr").length === 12, "Temperature is separately labelled and exact values are accessible in a table");
-  const roi = doc.querySelector('[data-metric="ratio"]').textContent;
+  const recommendation = text("timing-insight");
+  assert(recommendation.includes("116") && recommendation.includes("92") && recommendation.includes("8 months"), "April recommendation uses the existing April/September assessment");
+  const roi = doc.querySelector('[data-outcome-metric="ratio"]').textContent;
   doc.querySelector('[data-launch-preset="9"]').click();
   assert(el("launch-month").value === "9" && text("launch-wait") === "8 months to wait" && text("launch-test-month").includes("May next year"), "September waits eight months to May next year");
   assert(text("launch-exposure") === "92 index" && text("launch-tradeoff").includes("learn cheaply") && text("launch-tradeoff").includes("cash must bridge"), "September quantifies quiet exposure and explains waiting cost");
   assert(text("launch-selection-summary").includes("104 · 15°C") && doc.querySelector(".launch-selected .launch-value").textContent === "104", "September values and highlighted bar update together");
-  assert(doc.querySelector('[data-metric="ratio"]').textContent === roi, "Timing does not silently alter ROI");
+  assert(doc.querySelector('[data-outcome-metric="ratio"]').textContent === roi, "Timing does not silently alter ROI");
+  assert(text("timing-insight") === recommendation, "Selecting September preserves the stated April recommendation");
   el("launch-month").value = "7";
   el("launch-month").dispatchEvent(new win.Event("change", { bubbles: true }));
   assert(text("launch-wait") === "Immediate test" && text("launch-tradeoff").includes("little quiet-market rehearsal"), "July identifies immediate demand test and execution cost");
-  win.location.hash = "cities";
+  win.location.hash = "city";
   await until(() => !el("cities").hidden);
-  win.location.hash = "simulator";
-  await until(() => !el("simulator").hidden);
+  win.location.hash = "timing";
+  await until(() => win.location.hash === "#timing");
   assert(el("launch-month").value === "7", "Chosen month survives navigation");
   const originalFetch = win.fetch;
   win.fetch = async (url, ...args) => String(url).includes("launch_window.json") ? new win.Response("", { status: 503 }) : originalFetch(url, ...args);
   const ui = await win.eval('import("/launch-window.js")');
   await ui.initialiseLaunchWindow();
   assert(el("launch-controls").disabled && el("launch-results").hidden && !el("retry-launch").hidden, "Load failure hides stale results and offers retry");
-  assert(doc.querySelector('[data-metric="ratio"]').textContent === roi, "Launch data failure leaves financial simulator usable");
+  assert(doc.querySelector('[data-outcome-metric="ratio"]').textContent === roi, "Launch data failure leaves the recommended financial Outcome intact");
   win.fetch = async (url, ...args) => String(url).includes("launch_window.json") ? new win.Response(JSON.stringify({ ...data, months: [] }), { status: 200 }) : originalFetch(url, ...args);
   el("retry-launch").click();
   await until(() => text("launch-status").startsWith("Launch context unavailable"));
@@ -71,7 +75,8 @@ try {
   const chartBounds = el("launch-chart").getBoundingClientRect();
   assert(selectedBounds.left >= chartBounds.left && selectedBounds.right <= chartBounds.right, "Chosen launch column is visible without manual scrolling");
   assert(doc.documentElement.scrollWidth <= win.innerWidth, "No document overflow at selected viewport");
-  el("timing-title").scrollIntoView();
+  el("timing").scrollIntoView({ behavior: "instant" });
+  window.scrollTo({ top: 0, behavior: "instant" });
   document.getElementById("report").textContent = "PASS: " + checks.length + " browser checks\n" + checks.join("\n");
 } catch (error) {
   document.getElementById("report").textContent = "FAIL: " + error.stack + "\nPassed: " + checks.join("\n");

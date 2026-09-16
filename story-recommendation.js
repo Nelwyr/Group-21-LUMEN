@@ -1,5 +1,7 @@
 import { loadSimulatorEngine } from "./simulator-engine.js";
 import { RECOMMENDED_SCENARIO } from "./recommendation.js";
+import { rankCities } from "./city-engine.js";
+import { assessLaunch, validateLaunchData } from "./launch-window.js";
 
 const money = new Intl.NumberFormat("en-GB", { style: "currency", currency: "EUR" });
 const number = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 });
@@ -54,6 +56,12 @@ export async function initialiseStoryRecommendation() {
       const highestThreshold = evidence.segments.every((segment) => segment.tooExpensiveEur <= wellness.tooExpensiveEur);
       get("strategy-who").textContent = `Urban Wellness Professionals — ${wellness.respondentCount} of ${evidence.respondentCount} respondents; intent ${number.format(wellness.purchaseIntent)}/10; price sensitivity ${number.format(wellness.priceSensitivity)}/10; ${highestThreshold ? "highest segment average " : "average "}“too expensive” threshold ${money.format(wellness.tooExpensiveEur)}, ${money.format(wellness.tooExpensiveEur - scenario.priceEur)} above our price.`;
       get("strategy-when").textContent = `April, before the seasonal climb — demand index ${number.format(april.demandIndex)}, rising to ${number.format(may.demandIndex)} in May (baseline ${number.format(timing.indexBaseline)}).`;
+      const baseline = rankCities(cityData.cities);
+      const wellnessLeader = [...baseline].sort((a, b) => b.wellnessDensity - a.wellnessDensity)[0];
+      get("city-insight").textContent = `${get("strategy-where").textContent} At equal weights, ${baseline[0].city} leads with an index of ${oneDecimal.format(baseline[0].score)}/100. ${wellnessLeader.city} has the highest wellness share (${oneDecimal.format(wellnessLeader.wellnessDensity * 100)}%), so emphasising that criterion can change the leader. Regional shares and growth are illustrative assumptions; the wellness measure describes the synthetic survey sample.`;
+      const aprilAssessment = assessLaunch(validateLaunchData(timing), 4);
+      const septemberAssessment = assessLaunch(timing, 9);
+      get("timing-insight").textContent = `April starts at demand index ${number.format(april.demandIndex)}, before May’s ${number.format(may.demandIndex)}. The first-three-month average is ${number.format(aprilAssessment.firstThreeAverage)} for April versus ${number.format(septemberAssessment.firstThreeAverage)} for September. The wait for a strong-demand test is ${aprilAssessment.wait} month for April versus ${septemberAssessment.wait} months for September, using the existing index-${number.format(timing.demandTestThreshold)} rule. These are seasonal comparisons, not sales forecasts.`;
       get("strategy-evidence-note").textContent = `Evidence: market context (Exhibit 1), customer survey (Exhibit 4), price-sensitivity survey (Exhibit 10) and seasonality (Exhibit 12). The wellness price threshold is a mean from a separate sample of ${wellness.priceRespondentCount} respondents; it is not a guaranteed willingness to pay.`;
 
       const metrics = {
@@ -82,6 +90,8 @@ export async function initialiseStoryRecommendation() {
       get("strategy-who").textContent = "Urban Wellness Professionals — supporting evidence unavailable.";
       get("strategy-when").textContent = "April, before the seasonal climb — supporting evidence unavailable.";
       get("strategy-evidence-note").textContent = "";
+      get("city-insight").textContent = "Recommendation evidence unavailable. Retry loading in Strategy; city ranking has its own data status above.";
+      get("timing-insight").textContent = "Recommendation evidence unavailable. Retry loading in Strategy; the monthly comparison has its own data status above.";
       get("recommendation-status").textContent = "Could not load complete prepared recommendation data. Retry loading.";
       get("outcome-status").textContent = "Outcome unavailable. Use Retry loading in Strategy.";
       retry.hidden = false;

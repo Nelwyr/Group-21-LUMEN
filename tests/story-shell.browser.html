@@ -30,14 +30,18 @@ try {
   await until(() => frame.contentDocument.getElementById("price-choice-status")?.textContent === "Tested-price comparison ready"
     && frame.contentDocument.getElementById("position-status")?.textContent === "Price positioning ready");
   await until(() => frame.contentDocument.getElementById("segments-status")?.textContent === "Segment evidence ready"
-    && frame.contentDocument.getElementById("channels-status")?.textContent === "Channel comparison ready");
+    && frame.contentDocument.getElementById("channels-status")?.textContent === "Channel comparison ready"
+    && frame.contentDocument.getElementById("city-status")?.textContent === "City data ready"
+    && frame.contentDocument.getElementById("launch-status")?.textContent === "Launch context ready");
   const win = frame.contentWindow;
   const doc = frame.contentDocument;
   const ids = ["strategy", "segments", "channels", "price", "city", "timing", "outcome"];
   const header = doc.querySelector(".story-header");
   const active = () => doc.querySelector("[data-section-link][aria-current]")?.hash;
-  assert([...doc.querySelectorAll("main section")].map((s) => s.id).join() === ids.join(), "Seven story sections appear in the requested order");
-  assert(["city", "timing"].every((id) => doc.getElementById(id).children.length === 1 && doc.getElementById(id).firstElementChild.tagName === "H2"), "City and Timing remain headings only");
+  assert([...doc.querySelectorAll("main > section")].map((s) => s.id).join() === ids.join(), "Seven story sections appear in the requested order");
+  assert(doc.querySelector("#city #city-form") && doc.querySelector("#timing #launch-controls"), "Existing city and timing controls are relocated inside the story sections");
+  const idsOnPage = [...doc.querySelectorAll("[id]")].map((element) => element.id);
+  assert(new Set(idsOnPage).size === idsOnPage.length, "Relocation introduces no duplicate IDs");
   assert(doc.getElementById("city").getBoundingClientRect().top >= header.getBoundingClientRect().bottom, "Direct city link clears the sticky navbar");
   assert(win.getComputedStyle(doc.documentElement).scrollBehavior === (win.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"), "Scroll behavior respects the current motion preference");
   assert(doc.documentElement.scrollWidth <= win.innerWidth, "Navbar fits the viewport without horizontal overflow");
@@ -54,13 +58,15 @@ try {
   doc.querySelector('a[href="simulator.html"]').click();
   await until(() => frame.contentDocument.getElementById("simulator-status")?.textContent === "Simulator ready");
   assert(!frame.contentDocument.getElementById("simulator").hidden, "Separate simulator destination opens working ROI scenarios by default");
-  await until(() => frame.contentDocument.getElementById("city-status")?.textContent === "City data ready"
-    && frame.contentDocument.getElementById("launch-status")?.textContent === "Launch context ready"
-    && frame.contentDocument.getElementById("position-status")?.textContent === "Price positioning ready");
+  await until(() => frame.contentDocument.getElementById("position-status")?.textContent === "Price positioning ready");
+  assert(!frame.contentDocument.getElementById("city-form") && !frame.contentDocument.getElementById("launch-controls"), "Simulator contains no duplicate city or timing screen");
   frame.contentDocument.querySelector('nav a[href="index.html"]').click();
   await until(() => frame.contentDocument.readyState === "complete"
     && frame.contentDocument.querySelector('[href="#strategy"][aria-current="location"]'));
   assert(frame.contentWindow.location.pathname.endsWith("/index.html"), "Story link returns to the shell");
+  frame.src = "../simulator.html#cities";
+  await until(() => frame.contentWindow.location.pathname.endsWith("/index.html") && frame.contentWindow.location.hash === "#city");
+  assert(true, "Legacy simulator city URL redirects to the relocated screen");
   document.getElementById("report").textContent = `PASS: ${checks.length} checks\n${checks.join("\n")}`;
 } catch (error) {
   document.getElementById("report").textContent = `FAIL: ${error.message}\n${checks.join("\n")}`;
