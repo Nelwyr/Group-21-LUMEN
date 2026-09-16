@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Story price choice checks</title>
+<style>body { margin: 0; } iframe { border: 0; display: block; width: 100%; height: 2400px; }</style>
+<iframe id="app" src="../index.html#price" title="Price decision under test"></iframe>
+<pre id="report">RUNNING</pre>
+<script type="module">
+import { createSimulatorEngine } from "../simulator-engine.js";
+import { compareTestedPrices } from "../story-price.js";
+const frame = document.getElementById("app");
+const viewport = Number(new URLSearchParams(location.search).get("viewport"));
+if (viewport > 0) frame.style.width = `${viewport}px`;
+const checks = [];
+function assert(condition, message) { if (!condition) throw new Error(message); checks.push(message); }
+async function until(test) {
+  for (let n = 0; n < 300; n++) {
+    if (test()) return;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  throw new Error("Timed out waiting for price UI");
+}
+try {
+  const assumptions = await (await fetch("../data/app_data/simulator_assumptions.json")).json();
+  const expected = [0.452064177, 0.551246597, 0.373746867];
+  const comparisons = compareTestedPrices(createSimulatorEngine(assumptions));
+  assert(comparisons.every((row, index) => Math.abs(row.acceptanceContributionEur - expected[index]) < 1e-10), "All three products match independently calculated full-precision values");
+  assert(comparisons.every((row) => row.channelMix["Gym & Office"] === .45 && row.channelMix["DTC Online"] === .4 && row.channelMix["Retail/Grocery"] === .15), "Every price uses the fixed recommended 45/40/15 mix");
+  const altered = { ...assumptions, acceptance_curve: assumptions.acceptance_curve.map((row) => ({ ...row, acceptance_pct: row.price_eur === 2.59 ? 90 : row.acceptance_pct })) };
+  assert(compareTestedPrices(createSimulatorEngine(altered)).sort((a, b) => b.acceptanceContributionEur - a.acceptanceContributionEur)[0].priceEur === 2.59, "The winning price is computed from data rather than fixed to 2.19");
+  await until(() => frame.contentDocument.getElementById("price-choice-status")?.textContent === "Tested-price comparison ready"
+    && frame.contentDocument.getElementById("position-status")?.textContent === "Price positioning ready"
+    && frame.contentDocument.getElementById("outcome-status")?.textContent === "Recommended scenario ready");
+  const win = frame.contentWindow;
+  const doc = frame.contentDocument;
+  const get = (id) => doc.getElementById(id);
+  const metric = (key) => doc.querySelector(`[data-price-metric="${key}"]`).textContent;
+  function select(price) {
+    const radio = doc.querySelector(`[name="tested-price"][value="${price}"]`);
+    radio.checked = true;
+    radio.dispatchEvent(new win.Event("change", { bubbles: true }));
+  }
+  assert(doc.querySelector('[name="tested-price"]:checked').value === "2.19", "Recommended price is preselected with native radio controls");
+  assert(metric("acceptance") === "51.7%" && metric("contribution") === "€1.07" && metric("product") === "€0.5512", "Selected recommendation shows engine acceptance, contribution and product");
+  assert(get("price-comparison-body").rows.length === 3 && get("price-choice-verdict").textContent.startsWith("€2.19 has the highest"), "All prices and the computed peak remain visible");
+  assert(get("price-payback-explanation").textContent.includes("5.12 months versus 6.72") && get("price-payback-explanation").textContent.includes("per acquired customer") && get("price-payback-explanation").textContent.includes("how many customers accept"), "Payback objection is answered using engine values and its per-customer denominator");
+  const outcomeBefore = get("outcome-tradeoff").textContent;
+  const xs = [];
+  for (const [price, acceptance, contribution, product] of [[1.79, "61.7%", "€0.73", "€0.4521"], [2.19, "51.7%", "€1.07", "€0.5512"], [2.59, "26.7%", "€1.40", "€0.3737"]]) {
+    select(price);
+    assert(metric("acceptance") === acceptance && metric("contribution") === contribution && metric("product") === product, `${price}: selection recalculates all three displayed metrics`);
+    assert(get("position-price-summary").textContent.includes(`€${price}`) && get("position-price-summary").textContent.includes("selected tested price"), `${price}: existing chart follows the selected price`);
+    assert(get("price-choice-gain").textContent && get("price-choice-risk").textContent, `${price}: gain and risk are populated`);
+    xs.push(Number(get("lumen-price-line").getAttribute("x1")));
+  }
+  assert(xs[0] < xs[1] && xs[1] < xs[2], "LUMEN line moves right as price rises");
+  const productBefore = metric("product");
+  const segment = doc.querySelector('[name="position-segment"][value="Students & Budget-Conscious"]');
+  segment.checked = true;
+  segment.dispatchEvent(new win.Event("change", { bubbles: true }));
+  get("position-channel").value = "DTC Online";
+  get("position-channel").dispatchEvent(new win.Event("change", { bubbles: true }));
+  assert(metric("product") === productBefore && get("outcome-tradeoff").textContent === outcomeBefore, "Chart audience/channel changes do not alter the fixed mix or recommended Outcome");
+  assert(get("position-audience").textContent.includes("Students") && get("position-price-summary").textContent.includes("€2.59"), "Chart segment and channel controls remain usable alongside price selection");
+  assert(doc.documentElement.scrollWidth <= win.innerWidth, "No document overflow at the selected viewport");
+
+  const originalFetch = win.fetch;
+  const ui = await win.eval('import("/story-price.js")');
+  win.fetch = (url, options) => String(url).includes("simulator_assumptions.json")
+    ? Promise.resolve(new win.Response(JSON.stringify(altered), { status: 200 })) : originalFetch(url, options);
+  await ui.initialiseStoryPrice();
+  assert(get("price-choice-verdict").textContent.startsWith("€2.59 has the highest") && metric("product") === "€1.2598", "UI product and winning price both react to changed assumptions");
+  win.fetch = (url, options) => String(url).includes("simulator_assumptions.json")
+    ? Promise.resolve(new win.Response("", { status: 503 })) : originalFetch(url, options);
+  await ui.initialiseStoryPrice();
+  assert(get("price-choice-controls").disabled && get("price-choice-results").hidden && metric("product") === "—" && !get("retry-price-choice").hidden, "Engine failure disables selection, clears stale results and offers retry");
+  assert(!get("position-results").hidden, "Independent competitor context survives a price-model failure");
+  win.fetch = (url, options) => String(url).includes("simulator_assumptions.json")
+    ? Promise.resolve(new win.Response("{}", { status: 200 })) : originalFetch(url, options);
+  await ui.initialiseStoryPrice();
+  assert(get("price-choice-results").hidden, "Malformed successful responses cannot display calculated claims");
+  win.fetch = originalFetch;
+  get("retry-price-choice").click();
+  await until(() => get("price-choice-status").textContent === "Tested-price comparison ready");
+  assert(metric("product") === "€0.3737", "Retry restores the engine comparison and preserves selected price");
+  select(2.19);
+  get("price").scrollIntoView({ behavior: "instant" });
+  window.scrollTo({ top: 0, behavior: "instant" });
+  document.getElementById("report").textContent = `PASS: ${checks.length} checks\n${checks.join("\n")}`;
+} catch (error) {
+  document.getElementById("report").textContent = `FAIL: ${error.message}\n${checks.join("\n")}`;
+}
+</script>

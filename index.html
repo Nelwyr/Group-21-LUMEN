@@ -55,6 +55,77 @@
       </section>
       <section id="price" class="story-section" aria-labelledby="price-title">
         <h2 id="price-title">Price</h2>
+        <p class="recommendation">Balance the chance of a purchase with what each can earns.</p>
+        <p id="price-mix-note" class="input-help">Fixed recommended mix: Gym &amp; Office 45% · DTC Online 40% · Retail/Grocery 15%.</p>
+        <fieldset id="price-choice-controls" class="price-choice-controls" disabled>
+          <legend>Choose a tested price per 330ml can</legend>
+          <div class="price-choices">
+            <label class="position-segment"><input type="radio" name="tested-price" value="1.79"><span><strong>€1.79</strong><small>Lower price</small></span></label>
+            <label class="position-segment"><input type="radio" name="tested-price" value="2.19" checked><span><strong>€2.19</strong><small>Our recommendation</small></span></label>
+            <label class="position-segment"><input type="radio" name="tested-price" value="2.59"><span><strong>€2.59</strong><small>Higher price</small></span></label>
+          </div>
+        </fieldset>
+        <p id="price-choice-status" class="input-help" role="status">Loading tested-price comparison…</p>
+        <button id="retry-price-choice" class="button button-secondary" type="button" hidden>Retry price comparison</button>
+        <div id="price-choice-results" hidden>
+          <div class="panel price-choice-panel" aria-live="polite" aria-atomic="true">
+            <h3 id="price-choice-title"></h3>
+            <div class="metric-grid price-choice-metrics">
+              <div><span>Estimated acceptance</span><strong data-price-metric="acceptance">—</strong></div>
+              <div><span>Blended contribution / unit</span><strong data-price-metric="contribution">—</strong></div>
+              <div><span>Acceptance × contribution</span><strong data-price-metric="product">—</strong></div>
+            </div>
+            <p id="price-choice-formula" class="input-help"></p>
+            <div class="price-choice-tradeoffs">
+              <div><h3>What you gain</h3><p id="price-choice-gain"></p></div>
+              <div><h3>What you risk</h3><p id="price-choice-risk"></p></div>
+            </div>
+          </div>
+          <div class="price-comparison-scroll" tabindex="0" role="region" aria-label="Compare the three tested prices">
+            <table class="launch-data-table price-comparison-table">
+              <caption>Our decision criterion: highest acceptance × contribution</caption>
+              <thead><tr><th scope="col">Price</th><th scope="col">Acceptance</th><th scope="col">Contribution / can</th><th scope="col">Acceptance × contribution</th></tr></thead>
+              <tbody id="price-comparison-body"></tbody>
+            </table>
+          </div>
+          <p id="price-choice-verdict" class="target-status"></p>
+          <p class="input-help">Multiply acceptance as a fraction by the unrounded contribution per can. This is a comparison score at a fixed channel mix, not a forecast of total sales or profit.</p>
+          <div class="decision-note price-payback-note">
+            <h3>Why not choose the fastest payback?</h3>
+            <p id="price-payback-explanation"></p>
+          </div>
+        </div>
+        <p class="outcome-limitation"><strong>Three tested points only.</strong> The highest product identifies the best of these three prices under the case assumptions. It does not establish an optimum between them. Acceptance is estimated; realised sales remain unproven.</p>
+        <article class="panel diagnostic-card position-panel story-positioning" aria-labelledby="positioning-title">
+          <p class="eyebrow">Competitive context</p>
+          <h3 id="positioning-title">Price positioning</h3>
+          <p class="position-intro">See where the selected price sits among competitors. Choose a segment and channel to inspect the context.</p>
+          <fieldset id="position-controls" disabled>
+            <legend>Who are we asking to choose LUMEN?</legend>
+            <div id="position-segments" class="position-segments"></div>
+            <label class="position-channel-label" for="position-channel">Compare single-can prices in <select id="position-channel"></select></label>
+          </fieldset>
+          <p id="position-status" class="input-help" role="status">Loading price positioning…</p>
+          <button id="retry-positioning" class="button button-secondary" type="button" hidden>Retry loading</button>
+          <div id="position-results" hidden>
+            <div class="position-summary" aria-live="polite" aria-atomic="true">
+              <h3 id="position-audience"></h3>
+              <p id="position-price-summary"></p>
+              <div class="decision-note"><h3>What this price asks of this segment</h3><p id="position-assessment"></p></div>
+            </div>
+            <figure class="position-figure">
+              <figcaption>Price × segment awareness <span>Dots = competitors · vertical line = LUMEN price only</span></figcaption>
+              <div id="position-chart"></div>
+            </figure>
+            <div id="position-brand-cards" class="position-brand-cards"></div>
+            <p id="position-channel-note" class="input-help"></p>
+            <details class="model-notes"><summary>Awareness, prices and interpretation</summary>
+              <p>Awareness is the share of respondents recognising each brand within the selected segment of the synthetic customer survey. It is not perceived quality, preference or willingness to pay. LUMEN awareness is unmeasured; its full-height line indicates only the selected price.</p>
+              <p>Prices use comparable single 330ml cans from the case, excluding multipacks and subscriptions. Missing listings are not plotted. The nearest-price assessment uses listed brands in the selected channel; ties use brand order. Cards show recognition counts and sample sizes; n = 8–14 is directional and n &lt; 8 is withheld.</p>
+              <p>Changing segment or comparison channel updates this chart only. The price comparison above keeps the recommended 45/40/15 channel mix and the engine’s overall acceptance curve; it does not estimate segment-specific acceptance.</p>
+            </details>
+          </div>
+        </article>
       </section>
       <section id="city" class="story-section" aria-labelledby="city-title">
         <h2 id="city-title">City</h2>
@@ -83,7 +154,7 @@
           <h3>The trade-off we accept</h3>
           <p id="outcome-tradeoff">The acceptance, channel-margin and payback comparison will appear when the prepared data loads.</p>
         </div>
-        <p class="outcome-limitation"><strong>Only three price points were tested.</strong> €2.19 is our best tested price for the chosen balance of acceptance and contribution, not a proven optimum. €2.59 produces higher contribution and faster modelled payback, but estimated acceptance falls sharply.</p>
+        <p class="outcome-limitation"><strong>Only three price points were tested.</strong> €2.19 is our best tested price for the chosen balance of acceptance and contribution, not a proven optimum. €2.59 produces higher contribution and faster modelled payback per acquired customer, but that payback does not account for how many customers accept the price. <a class="price-reason-link" href="#price">Compare acceptance × contribution in Price.</a></p>
         <div class="home-actions"><a class="button button-primary" href="simulator.html?scenario=recommended">Explore this setting in the simulator</a></div>
       </section>
     </main>

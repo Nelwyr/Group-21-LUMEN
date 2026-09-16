@@ -1,4 +1,5 @@
 import { initialiseStoryRecommendation } from "./story-recommendation.js";
+import { initialiseStoryPrice } from "./story-price.js";
 
 const header = document.querySelector(".story-header");
 const links = [...document.querySelectorAll("[data-section-link]")];
@@ -49,7 +50,7 @@ let interacted = false;
 const interactionEvents = ["wheel", "touchstart", "pointerdown", "keydown"];
 const markInteraction = () => { interacted = true; };
 interactionEvents.forEach((type) => window.addEventListener(type, markInteraction, { passive: true }));
-await initialiseStoryRecommendation();
+await Promise.all([initialiseStoryRecommendation(), initialiseStoryPrice()]);
 interactionEvents.forEach((type) => window.removeEventListener(type, markInteraction));
 if (initialSection && location.hash === initialHash && !interacted) {
   initialSection.scrollIntoView({ behavior: "instant" });
