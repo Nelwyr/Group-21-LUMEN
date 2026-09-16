@@ -90,8 +90,8 @@
                     <input id="budget" name="budget" type="number" min="0.01" step="0.01" value="120000" required>
                   </label>
                   <label for="cac">CAC (€ / acquired customer)
-                    <span>Your scenario assumption</span>
-                    <input id="cac" name="cac" type="number" min="0.01" step="0.01" value="44" required>
+                    <span id="cac-help">Customer acquisition cost: the average marketing spend to acquire one new customer. Enter your assumed cost per customer.</span>
+                    <input id="cac" name="cac" type="number" min="0.01" step="0.01" value="44" aria-describedby="cac-help" required>
                   </label>
                 </div>
                 <fieldset class="channel-mix">
@@ -103,6 +103,7 @@
                   </div>
                   <p id="mix-total" class="input-help">Total: 100%. Shares must add up to 100%.</p>
                 </fieldset>
+                <p id="recommended-channel-mix" class="input-help"><strong>Our recommended channel mix:</strong><br>45% Gym &amp; Office · 40% DTC Online · 15% Retail/Grocery.</p>
               </fieldset>
               <p id="scenario-error" class="validation-message" role="alert" hidden></p>
               <button id="retry-simulator" class="button button-secondary" type="button" hidden>Retry loading</button>
