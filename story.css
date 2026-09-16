@@ -32,6 +32,23 @@
 #so-what-title { font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.6rem, 6vw, 5.7rem); line-height: .97; letter-spacing: -.055em; }
 .outcome-tradeoff, .outcome-limitation { margin-top: 1.5rem; }
 .outcome-limitation { color: var(--muted); }
+.segment-comparison, .channel-comparison { display: grid; gap: 1rem; margin-top: 1.5rem; }
+.segment-comparison { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.segment-comparison .audience-card { display: grid; grid-template-rows: 3rem 1.2rem 1fr; }
+.segment-comparison .audience-card .eyebrow { grid-row: 2; }
+.segment-comparison .audience-card dl { grid-row: 3; }
+.channel-comparison { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.audience-card { min-width: 0; }
+.audience-card h3 { font-size: 1rem; }
+.audience-priority { border-color: var(--accent); }
+.audience-card dl { margin: 1.25rem 0 0; }
+.audience-card dl > div + div { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.audience-card dt { color: var(--muted); font-size: .78rem; }
+.audience-card dd { margin: .3rem 0 0; font-weight: 650; }
+.audience-decision { margin-top: 1.5rem; }
+.audience-decision p + p { margin-top: .75rem; }
+@media (max-width: 1000px) { .segment-comparison { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .segment-comparison, .channel-comparison { grid-template-columns: 1fr; } }
 .price-choice-controls { margin: 1.5rem 0 0; padding: 0; border: 0; }
 .price-choice-controls legend { margin-bottom: .8rem; font-weight: 750; }
 .price-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; }

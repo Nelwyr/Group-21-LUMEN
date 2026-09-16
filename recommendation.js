@@ -1,4 +1,6 @@
 // Shared inputs for the story outcome and its simulator destination.
+export const PRIORITY_SEGMENTS = Object.freeze(["Urban Wellness Professionals", "Fitness & Gym-Goers"]);
+
 export const RECOMMENDED_SCENARIO = Object.freeze({
   priceEur: 2.19,
   marketingBudgetEur: 120000,

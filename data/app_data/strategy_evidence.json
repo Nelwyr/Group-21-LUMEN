@@ -5,11 +5,26 @@
   ],
   "respondentCount": 420,
   "groceryRespondentCount": 195,
+  "channels": [
+    {
+      "name": "DTC Online",
+      "respondentCount": 119
+    },
+    {
+      "name": "Retail/Grocery",
+      "respondentCount": 195
+    },
+    {
+      "name": "Gym & Office",
+      "respondentCount": 106
+    }
+  ],
   "segments": [
     {
       "name": "Fitness & Gym-Goers",
       "respondentCount": 83,
       "purchaseIntent": 7.967469879518072,
+      "monthlySpendEur": 20.114698795180722,
       "priceSensitivity": 5.444578313253012,
       "priceRespondentCount": 63,
       "tooExpensiveEur": 3.1058730158730157
@@ -18,6 +33,7 @@
       "name": "On-the-go Commuters",
       "respondentCount": 90,
       "purchaseIntent": 6.711111111111111,
+      "monthlySpendEur": 19.96811111111111,
       "priceSensitivity": 5.982222222222222,
       "priceRespondentCount": 64,
       "tooExpensiveEur": 2.69765625
@@ -26,6 +42,7 @@
       "name": "Students & Budget-Conscious",
       "respondentCount": 135,
       "purchaseIntent": 5.496296296296296,
+      "monthlySpendEur": 17.24385185185185,
       "priceSensitivity": 7.927407407407407,
       "priceRespondentCount": 99,
       "tooExpensiveEur": 2.2036363636363636
@@ -34,6 +51,7 @@
       "name": "Urban Wellness Professionals",
       "respondentCount": 112,
       "purchaseIntent": 9.121428571428572,
+      "monthlySpendEur": 21.728928571428572,
       "priceSensitivity": 3.63125,
       "priceRespondentCount": 74,
       "tooExpensiveEur": 3.477972972972973

@@ -49,9 +49,35 @@
       </section>
       <section id="segments" class="story-section" aria-labelledby="segments-title">
         <h2 id="segments-title">Segments</h2>
+        <p class="recommendation">Prioritise intent and price headroom alongside audience size.</p>
+        <p id="segments-status" class="input-help" role="status">Loading segment evidence…</p>
+        <button id="retry-segments" class="button button-secondary" type="button" hidden>Retry segment evidence</button>
+        <div id="segments-results" hidden>
+          <p id="segments-price-context" class="input-help"></p>
+          <div id="segment-comparison" class="segment-comparison"></div>
+          <p class="input-help">Size, purchase intent and average monthly beverage spend come from the synthetic customer survey. The Van Westendorp “too expensive” figure is a segment mean from a separate price-sensitivity sample, whose size is shown on each card. It does not measure the share willing to buy at our price.</p>
+          <div class="decision-note audience-decision">
+            <h3>KEY INSIGHT → OUR DECISION</h3>
+            <p id="segments-insight"></p>
+            <p id="segments-decision"></p>
+          </div>
+        </div>
       </section>
       <section id="channels" class="story-section" aria-labelledby="channels-title">
         <h2 id="channels-title">Channels</h2>
+        <p class="recommendation">Balance where shoppers buy with what each sale returns.</p>
+        <p id="channels-status" class="input-help" role="status">Loading channel economics…</p>
+        <button id="retry-channels" class="button button-secondary" type="button" hidden>Retry channel comparison</button>
+        <div id="channels-results" hidden>
+          <p id="channels-price-context" class="input-help"></p>
+          <div id="channel-comparison" class="channel-comparison"></div>
+          <p class="input-help">Survey preference is a reach proxy, not observed channel sales or guaranteed distribution. Our allocation is a share of launch units, not marketing budget. Contribution is what remains per can after channel deductions and product cost, before acquisition spend.</p>
+          <div class="decision-note audience-decision">
+            <h3>KEY INSIGHT → OUR DECISION</h3>
+            <p id="channels-insight"></p>
+            <p id="channels-decision"></p>
+          </div>
+        </div>
       </section>
       <section id="price" class="story-section" aria-labelledby="price-title">
         <h2 id="price-title">Price</h2>

@@ -29,13 +29,15 @@ try {
   await until(() => frame.contentDocument.getElementById("outcome-status")?.textContent === "Recommended scenario ready");
   await until(() => frame.contentDocument.getElementById("price-choice-status")?.textContent === "Tested-price comparison ready"
     && frame.contentDocument.getElementById("position-status")?.textContent === "Price positioning ready");
+  await until(() => frame.contentDocument.getElementById("segments-status")?.textContent === "Segment evidence ready"
+    && frame.contentDocument.getElementById("channels-status")?.textContent === "Channel comparison ready");
   const win = frame.contentWindow;
   const doc = frame.contentDocument;
   const ids = ["strategy", "segments", "channels", "price", "city", "timing", "outcome"];
   const header = doc.querySelector(".story-header");
   const active = () => doc.querySelector("[data-section-link][aria-current]")?.hash;
   assert([...doc.querySelectorAll("main section")].map((s) => s.id).join() === ids.join(), "Seven story sections appear in the requested order");
-  assert(["segments", "channels", "city", "timing"].every((id) => doc.getElementById(id).children.length === 1 && doc.getElementById(id).firstElementChild.tagName === "H2"), "Four unfinished sections remain headings only");
+  assert(["city", "timing"].every((id) => doc.getElementById(id).children.length === 1 && doc.getElementById(id).firstElementChild.tagName === "H2"), "City and Timing remain headings only");
   assert(doc.getElementById("city").getBoundingClientRect().top >= header.getBoundingClientRect().bottom, "Direct city link clears the sticky navbar");
   assert(win.getComputedStyle(doc.documentElement).scrollBehavior === (win.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"), "Scroll behavior respects the current motion preference");
   assert(doc.documentElement.scrollWidth <= win.innerWidth, "Navbar fits the viewport without horizontal overflow");
