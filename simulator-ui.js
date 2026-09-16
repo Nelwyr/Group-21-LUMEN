@@ -1,4 +1,5 @@
 import { loadSimulatorEngine } from "./simulator-engine.js";
+import { RECOMMENDED_SCENARIO } from "./recommendation.js";
 
 const money = new Intl.NumberFormat("en-GB", { style: "currency", currency: "EUR" });
 const number = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 });
@@ -41,6 +42,14 @@ export async function initialiseSimulator() {
   const retry = document.getElementById("retry-simulator");
   const total = document.getElementById("mix-total");
   const inputs = [...form.querySelectorAll("input")];
+  if (new URLSearchParams(window.location.search).get("scenario") === "recommended") {
+    const setting = RECOMMENDED_SCENARIO;
+    const recommendedValues = { price: setting.priceEur, budget: setting.marketingBudgetEur, cac: setting.cacEur,
+      "mix-dtc": setting.channelMix["DTC Online"] * 100,
+      "mix-retail": setting.channelMix["Retail/Grocery"] * 100,
+      "mix-gym": setting.channelMix["Gym & Office"] * 100 };
+    Object.entries(recommendedValues).forEach(([id, value]) => { document.getElementById(id).value = value; });
+  }
   let calculate;
 
   function clearResults(message) {

@@ -1,3 +1,5 @@
+import { initialiseStoryRecommendation } from "./story-recommendation.js";
+
 const header = document.querySelector(".story-header");
 const links = [...document.querySelectorAll("[data-section-link]")];
 const sections = links.map((link) => document.querySelector(link.hash));
@@ -38,4 +40,18 @@ window.addEventListener("hashchange", scheduleUpdate);
 // handle subsequent scrolling, browser history and the CSS motion preference.
 const initialSection = sections.find((section) => `#${section.id}` === location.hash);
 if (initialSection) initialSection.scrollIntoView({ behavior: "instant" });
+updateActiveSection();
+
+// Loaded copy can change section heights on mobile. Keep an untouched direct
+// anchor aligned, but never pull a reader back after they start interacting.
+const initialHash = location.hash;
+let interacted = false;
+const interactionEvents = ["wheel", "touchstart", "pointerdown", "keydown"];
+const markInteraction = () => { interacted = true; };
+interactionEvents.forEach((type) => window.addEventListener(type, markInteraction, { passive: true }));
+await initialiseStoryRecommendation();
+interactionEvents.forEach((type) => window.removeEventListener(type, markInteraction));
+if (initialSection && location.hash === initialHash && !interacted) {
+  initialSection.scrollIntoView({ behavior: "instant" });
+}
 updateActiveSection();

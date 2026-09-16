@@ -31,6 +31,7 @@ SIMULATOR_ASSUMPTIONS_OUTPUT = OUTPUT_DIR / "simulator_assumptions.json"
 CITY_PRIORITISATION_OUTPUT = OUTPUT_DIR / "city_prioritisation.json"
 LAUNCH_WINDOW_OUTPUT = OUTPUT_DIR / "launch_window.json"
 PRICE_POSITIONING_OUTPUT = OUTPUT_DIR / "price_positioning.json"
+STRATEGY_EVIDENCE_OUTPUT = OUTPUT_DIR / "strategy_evidence.json"
 
 CHANNELS = ("DTC Online", "Retail/Grocery", "Gym & Office")
 NUMERIC_FIELDS = (
@@ -370,6 +371,37 @@ def write_price_positioning() -> None:
         destination.write("\n")
 
 
+def write_strategy_evidence() -> None:
+    """Export segment means and counts from the two separate synthetic surveys."""
+    with CUSTOMER_INPUT.open(encoding="utf-8", newline="") as source:
+        customers = list(csv.DictReader(source))
+    with (DATA_DIR / "price_sensitivity_survey.csv").open(encoding="utf-8", newline="") as source:
+        prices = list(csv.DictReader(source))
+    segments = []
+    for name in sorted({row["segment"] for row in customers}):
+        group = [row for row in customers if row["segment"] == name]
+        thresholds = [float(row["too_expensive_eur"]) for row in prices if row["segment"] == name]
+        if not thresholds or any(not math.isfinite(value) or value <= 0 for value in thresholds):
+            raise ValueError(f"Missing or invalid price thresholds for {name}")
+        segments.append({
+            "name": name,
+            "respondentCount": len(group),
+            "purchaseIntent": mean(float(row["lumen_purchase_intent_1_10"]) for row in group),
+            "priceSensitivity": mean(float(row["price_sensitivity_1_10"]) for row in group),
+            "priceRespondentCount": len(thresholds),
+            "tooExpensiveEur": mean(thresholds),
+        })
+    with STRATEGY_EVIDENCE_OUTPUT.open("w", encoding="utf-8") as destination:
+        json.dump({
+            "sources": ["customer_survey.csv (Exhibit 4, synthetic)",
+                        "price_sensitivity_survey.csv (Exhibit 10, separate synthetic sample)"],
+            "respondentCount": len(customers),
+            "groceryRespondentCount": sum(row["preferred_channel"] == "Retail/Grocery" for row in customers),
+            "segments": segments,
+        }, destination, indent=2)
+        destination.write("\n")
+
+
 def main() -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     customer_rows = aggregate_customer_survey()
@@ -378,6 +410,7 @@ def main() -> None:
     write_city_prioritisation()
     write_launch_window()
     write_price_positioning()
+    write_strategy_evidence()
     print(
         f"Aggregated {customer_rows} customer responses into "
         f"{CUSTOMER_OUTPUT.name} and {CITY_OUTPUT.name}."
@@ -390,6 +423,7 @@ def main() -> None:
     print(f"Wrote city ranking inputs and separate diagnostics to {CITY_PRIORITISATION_OUTPUT.name}.")
     print(f"Wrote monthly demand and weather context to {LAUNCH_WINDOW_OUTPUT.name}.")
     print(f"Wrote separate segment awareness and comparable prices to {PRICE_POSITIONING_OUTPUT.name}.")
+    print(f"Wrote aggregate recommendation evidence to {STRATEGY_EVIDENCE_OUTPUT.name}.")
 
 
 if __name__ == "__main__":

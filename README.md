@@ -67,7 +67,9 @@ What the tool does not do is as important as what it does. It does not forecast 
 
 Serve the repository over HTTP and open `index.html`. No framework, build or external API is required. Regenerate prepared inputs with `py -3 scripts/prepare_app_data.py`.
 
-`index.html` is the story shell: seven empty sections, sticky anchor navigation and a separate simulator link. `simulator.html` preserves the existing workspace, opening ROI scenarios by default; its Overview and City prioritisation tabs retain the existing content pending later relocation. The story uses `story.css` and `story.js`, leaving the shared component styles unchanged.
+`index.html` has seven story sections with sticky anchor navigation. Strategy and Outcome contain the launch recommendation; the five middle sections remain empty. The outcome calls the same simulator engine with the inputs in `recommendation.js` (€2.19, 45% Gym & Office / 40% DTC / 15% grocery, €44 CAC and €120,000 budget). Its link opens `simulator.html?scenario=recommended` with those exact inputs. `simulator.html` otherwise preserves the existing workspace and defaults; its Overview and City prioritisation tabs retain the existing content pending later relocation. The shared component stylesheet remains unchanged.
+
+The story loads only `data/app_data/`: `strategy_evidence.json` contains full-precision segment means and counts from the separate customer and price-sensitivity surveys; existing city, seasonality and simulator extracts supply the remaining figures. Berlin is supported over Munich but does not have the highest wellness share (Cologne does). Wellness Professionals have the highest average “too expensive” threshold, not the only threshold above €2.19. Channel-specific contributions are distinguished from the blended €1.07 result. €2.19 is the preferred tested trade-off, not an optimised price or a German sales forecast.
 
 ### City prioritisation — method
 
@@ -90,6 +92,8 @@ The browser loads only prepared files under `data/app_data/`. `city_prioritisati
 Browser checks: `py -3 scripts/check_simulator_ui.py` for the simulator and `py -3 scripts/check_simulator_ui.py --page tests/city-ui.browser.html` for cities. To check an actual 390px iframe viewport, use `--page tests/city-ui.browser.html?viewport=390`. The runner uses installed Chrome without added dependencies.
 
 Story navigation checks: `py -3 scripts/check_simulator_ui.py --page tests/story-shell.browser.html --real-time`. Use `--page tests/story-shell.browser.html?viewport=390 --real-time --reduced-motion` for mobile with reduced motion. Real time lets the browser render scrolling frames before reporting results.
+
+Recommendation checks: `py -3 scripts/check_simulator_ui.py --page tests/story-recommendation.browser.html`. Add `?viewport=390` to the page for mobile. These compare both pages at the recommended setting, change engine assumptions to check that results update together, and check data-load failures and retry.
 
 ### Launch window — method
 
