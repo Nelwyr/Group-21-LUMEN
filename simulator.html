@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="LUMEN Germany launch decision workspace: ROI scenarios and city prioritisation."
+    />
+    <title>ROI scenarios — LUMEN</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-default-route="simulator">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="LUMEN, story">
+        <span class="brand-mark">L</span>
+        <span>LUMEN <small>Germany launch</small></span>
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="index.html">Story</a>
+        <a href="#home" data-route-link="home">Overview</a>
+        <a href="#simulator" data-route-link="simulator">ROI scenarios</a>
+        <a href="#cities" data-route-link="cities">City prioritisation</a>
+      </nav>
+    </header>
+
+    <main id="main-content" class="app-shell">
+      <section id="home" class="view" data-view="home" aria-labelledby="home-title">
+        <p class="eyebrow">Germany launch decision · 2026</p>
+        <h1 id="home-title">Decide with clarity. Own the trade-offs.</h1>
+        <p class="recommendation">
+          Working recommendation: prioritise the combination of price, channel and launch month
+          that delivers a credible return on investment over maximising any single metric.
+        </p>
+
+        <div class="section-heading">
+          <p class="eyebrow">What we accept</p>
+          <h2>Three explicit trade-offs</h2>
+        </div>
+        <div class="tradeoff-grid">
+          <article class="tradeoff-card">
+            <span class="card-index">01</span>
+            <h3>Initial volume</h3>
+            <p>We will not maximise short-term acceptance at the expense of contribution.</p>
+          </article>
+          <article class="tradeoff-card">
+            <span class="card-index">02</span>
+            <h3>National coverage</h3>
+            <p>We will not pursue nationwide coverage at launch before validating our priority cities.</p>
+          </article>
+          <article class="tradeoff-card">
+            <span class="card-index">03</span>
+            <h3>Payback speed</h3>
+            <p>We will not cut prices or budgets to the point of undermining brand building.</p>
+          </article>
+        </div>
+
+        <div class="home-actions">
+          <a class="button button-primary" href="#simulator">Open simulator</a>
+          <a class="button button-secondary" href="#cities">Explore cities</a>
+        </div>
+      </section>
+
+      <section id="simulator" class="view" data-view="simulator" aria-labelledby="simulator-title" hidden>
+        <div class="view-header">
+          <div>
+            <p class="eyebrow">Core tool</p>
+            <h1 id="simulator-title">ROI / scenario simulator</h1>
+          </div>
+          <span class="status-pill" id="simulator-status" role="status">Loading simulator…</span>
+        </div>
+        <p class="lede">Adjust price, channel mix, marketing budget and CAC to see the return and the trade-off you are choosing.</p>
+
+        <div class="simulator-layout">
+          <section class="panel controls-panel" aria-labelledby="scenario-inputs-title">
+            <div class="panel-heading">
+              <p class="eyebrow">Inputs</p>
+              <h2 id="scenario-inputs-title">Scenario</h2>
+            </div>
+            <form id="scenario-form">
+              <fieldset id="scenario-controls" disabled>
+                <legend class="sr-only">Launch scenario inputs</legend>
+                <div class="control-grid">
+                  <label for="price">Retail price (€)
+                    <span>Acceptance tested from €1.79 to €2.59</span>
+                    <input id="price" name="price" type="number" min="0.01" step="0.01" value="2.29" required>
+                  </label>
+                  <label for="budget">Marketing budget (€)
+                    <span>Total acquisition spend</span>
+                    <input id="budget" name="budget" type="number" min="0.01" step="0.01" value="120000" required>
+                  </label>
+                  <label for="cac">CAC (€ / acquired customer)
+                    <span id="cac-help">Customer acquisition cost: the average marketing spend to acquire one new customer. Enter your assumed cost per customer.</span>
+                    <input id="cac" name="cac" type="number" min="0.01" step="0.01" value="44" aria-describedby="cac-help" required>
+                  </label>
+                </div>
+                <fieldset class="channel-mix">
+                  <legend>Channel mix · share of units (%)</legend>
+                  <div class="control-grid">
+                    <label for="mix-dtc">DTC Online<input id="mix-dtc" type="number" min="0" max="100" step="0.1" value="40" required></label>
+                    <label for="mix-retail">Retail/Grocery<input id="mix-retail" type="number" min="0" max="100" step="0.1" value="30" required></label>
+                    <label for="mix-gym">Gym &amp; Office<input id="mix-gym" type="number" min="0" max="100" step="0.1" value="30" required></label>
+                  </div>
+                  <p id="mix-total" class="input-help">Total: 100%. Shares must add up to 100%.</p>
+                </fieldset>
+                <p id="recommended-channel-mix" class="input-help"><strong>Our recommended channel mix:</strong><br>45% Gym &amp; Office · 40% DTC Online · 15% Retail/Grocery.</p>
+              </fieldset>
+              <p id="scenario-error" class="validation-message" role="alert" hidden></p>
+              <button id="retry-simulator" class="button button-secondary" type="button" hidden>Retry loading</button>
+            </form>
+          </section>
+
+          <section class="panel results-panel" aria-labelledby="scenario-results-title">
+            <div class="panel-heading">
+              <p class="eyebrow">Output</p>
+              <h2 id="scenario-results-title">Scenario results</h2>
+            </div>
+            <div id="scenario-output" aria-live="polite" aria-atomic="true">
+              <div class="metric-grid" aria-label="Calculated scenario metrics">
+                <div><span>Unit contribution</span><strong data-metric="contribution">—</strong></div>
+                <div><span>CAC assumption</span><strong data-metric="cac">—</strong></div>
+                <div><span>LTV : CAC</span><strong data-metric="ratio">—</strong></div>
+                <div><span>Estimated payback</span><strong data-metric="payback">—</strong></div>
+                <div><span>Estimated acceptance</span><strong data-metric="acceptance">—</strong></div>
+                <div><span>Expected customers acquired</span><strong data-metric="customers">—</strong></div>
+                <div><span>Contribution LTV</span><strong data-metric="ltv">—</strong></div>
+                <div><span>Gap to 3:1 target</span><strong data-metric="gap">—</strong></div>
+              </div>
+              <p id="target-status" class="target-status"></p>
+              <p id="scenario-warning" class="validation-message" hidden></p>
+              <div class="decision-note">
+                <h3>Who this serves — and what we give up</h3>
+                <p id="scenario-tradeoff">Your scenario assessment will appear once the inputs are ready.</p>
+              </div>
+            </div>
+            <details class="model-notes">
+              <summary>How to read these results</summary>
+              <p>Clients acquired = budget / CAC. Acceptance is a separate survey estimate; it is not applied a second time to customer acquisition. Increasing budget scales customers, not per-customer returns.</p>
+              <p>LTV and payback assume stable monthly purchases and an extrapolated customer lifetime calibrated from the historical LTV treated as net revenue. These are scenario assumptions, not observed German retention.</p>
+              <p>The leadership assessment uses €2.19 as a premium-price proxy for Jonas and the 3:1 return target for Elena. It does not measure brand perception or prove a launch recommendation. Under a fixed lifetime, LTV:CAC and payback are mathematically linked.</p>
+            </details>
+          </section>
+        </div>
+
+        <div class="diagnostic-grid">
+          <section class="panel diagnostic-card position-panel" aria-labelledby="positioning-title">
+            <p class="eyebrow">Integrated diagnostic</p>
+            <h2 id="positioning-title">Price positioning</h2>
+            <p class="position-intro">Four segments. Four competitive contexts. Choose whose awareness matters for this price.</p>
+            <fieldset id="position-controls" disabled>
+              <legend>Who are we asking to choose LUMEN?</legend>
+              <div id="position-segments" class="position-segments"></div>
+              <label class="position-channel-label" for="position-channel">Compare single-can prices in <select id="position-channel"></select></label>
+            </fieldset>
+            <p id="position-status" class="input-help" role="status">Loading price positioning…</p>
+            <button id="retry-positioning" class="button button-secondary" type="button" hidden>Retry loading</button>
+            <div id="position-results" hidden>
+              <div class="position-summary" aria-live="polite" aria-atomic="true">
+                <h3 id="position-audience"></h3>
+                <p id="position-price-summary"></p>
+                <div class="decision-note"><h3>What this price asks of this segment</h3><p id="position-assessment"></p></div>
+              </div>
+              <figure class="position-figure">
+                <figcaption>Price × segment awareness <span>Dots = competitors · vertical line = LUMEN price only</span></figcaption>
+                <div id="position-chart"></div>
+              </figure>
+              <div id="position-brand-cards" class="position-brand-cards"></div>
+              <p id="position-channel-note" class="input-help"></p>
+              <details class="model-notes"><summary>Awareness, prices and interpretation</summary>
+                <p>Awareness = respondents recognising a brand / all respondents in the selected segment, across cities. Counts come from the case's synthetic customer survey; percentages are displayed rounded to whole numbers. The four segments are never pooled into a German average. Awareness is not perceived quality, preference or willingness to pay.</p>
+                <p>Prices come from competitor_prices_by_channel.csv, using single 330ml cans only. Multipacks and subscriptions are excluded. Changing channel moves prices, while awareness continues to describe the selected segment as a whole. Changing segment preserves both axis scales. The price axis expands if LUMEN exceeds the displayed range.</p>
+                <p>LUMEN has no measured awareness in this survey. Its full-height vertical line encodes only the simulator's retail price; it has no dot or awareness value. The nearest-price assessment uses listed brands in the chosen channel; equal distances use the numbered brand order. This comparison does not adjust the simulator's acceptance or ROI.</p>
+                <p>Each brand card gives the recognition count and segment sample size. Samples of 8–14 are directional; awareness below n = 8 is withheld. Sample sizes are not confidence intervals or evidence of population representativeness. The browser loads prepared prices and segment aggregates only.</p>
+              </details>
+            </div>
+          </section>
+          <section class="panel diagnostic-card launch-panel" aria-labelledby="timing-title">
+            <p class="eyebrow">Integrated diagnostic</p>
+            <h2 id="timing-title">Launch window</h2>
+            <p class="launch-intro">Choose when to learn — and how long to wait for a real demand test.</p>
+            <fieldset id="launch-controls" disabled>
+              <legend class="sr-only">Launch timing</legend>
+              <label for="launch-month">On-shelf launch month
+                <select id="launch-month">
+                  <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                  <option value="4" selected>April</option><option value="5">May</option><option value="6">June</option>
+                  <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                  <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                </select>
+              </label>
+              <div class="launch-presets" aria-label="Compare launch approaches">
+                <button class="button button-secondary" type="button" data-launch-preset="4" aria-pressed="true">April · before the climb</button>
+                <button class="button button-secondary" type="button" data-launch-preset="9" aria-pressed="false">September · quieter pilot</button>
+              </div>
+            </fieldset>
+            <p id="launch-status" class="input-help" role="status">Loading launch context…</p>
+            <button id="retry-launch" class="button button-secondary" type="button" hidden>Retry loading</button>
+            <div id="launch-results" hidden>
+              <div class="launch-assessment" aria-live="polite" aria-atomic="true">
+                <p id="launch-selection-summary" class="launch-selection-summary"></p>
+                <div class="launch-metrics">
+                  <div><strong id="launch-wait"></strong><span id="launch-test-month"></span></div>
+                  <div><strong id="launch-exposure"></strong><span id="launch-exposure-label"></span></div>
+                </div>
+                <div class="decision-note"><h3>What this timing costs</h3><p id="launch-tradeoff"></p></div>
+              </div>
+              <figure class="launch-figure">
+                <figcaption>Monthly demand index <span>Dashed line = source baseline 100 · highlighted column = launch</span><span>Temperature strip below = average German temperature (°C)</span></figcaption>
+                <div id="launch-chart" class="launch-chart-scroll" tabindex="0" role="region" aria-label="Year of demand and separate temperature strip; scroll horizontally on small screens"></div>
+                <p class="input-help launch-scroll-help">Scroll to compare all 12 months. Launch values also appear above.</p>
+              </figure>
+              <p id="launch-comparison" class="input-help"></p>
+              <p class="input-help">A cheaper learning phase means deliberately limiting pilot spend; the data does not establish lower CAC in quieter months. Temperature is context, not a causal demand model. Timing does not change the ROI calculations above; no euro cost or sales forecast is implied.</p>
+              <details class="model-notes"><summary>Timing method and monthly values</summary>
+                <p id="launch-method"></p>
+                <table class="launch-data-table"><caption>Demand index and average German temperature</caption><thead><tr><th scope="col">Month</th><th scope="col">Index</th><th scope="col">Temperature</th></tr></thead><tbody id="launch-data-body"></tbody></table>
+              </details>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="cities" class="view" data-view="cities" aria-labelledby="cities-title" hidden>
+        <div class="view-header">
+          <div>
+            <p class="eyebrow">Where to launch</p>
+            <h1 id="cities-title">City prioritisation</h1>
+          </div>
+          <span class="status-pill" id="city-status" role="status">Loading city data…</span>
+        </div>
+        <p class="lede">Choose what matters for the first launch. Compare five cities on market size, growth and wellness survey share, and see the trade-off as you change the weights.</p>
+
+        <section class="panel city-weights" aria-labelledby="city-weights-title">
+          <div class="panel-heading">
+            <p class="eyebrow">Your criteria</p>
+            <h2 id="city-weights-title">What should lead the decision?</h2>
+          </div>
+          <form id="city-form">
+            <fieldset id="city-controls" disabled>
+              <legend class="sr-only">Criterion importance, from 0 to 100; weights are normalised automatically</legend>
+              <div class="city-weight-grid">
+                <label for="weight-marketSizeEur"><span class="criterion-label"><i class="criterion-0"></i>Market size <output id="share-marketSizeEur" for="weight-marketSizeEur">—</output></span>
+                  <span class="weight-description">National market × illustrative regional share</span>
+                  <input id="weight-marketSizeEur" type="range" min="0" max="100" step="1" value="50" aria-describedby="city-weight-help">
+                </label>
+                <label for="weight-growth"><span class="criterion-label"><i class="criterion-1"></i>Regional growth <output id="share-growth" for="weight-growth">—</output></span>
+                  <span class="weight-description">Regional CAGR assumption from Exhibit 1</span>
+                  <input id="weight-growth" type="range" min="0" max="100" step="1" value="50" aria-describedby="city-weight-help">
+                </label>
+                <label for="weight-wellnessDensity"><span class="criterion-label"><i class="criterion-2"></i>Wellness density <output id="share-wellnessDensity" for="weight-wellnessDensity">—</output></span>
+                  <span class="weight-description">Proxy: wellness respondents / city sample</span>
+                  <input id="weight-wellnessDensity" type="range" min="0" max="100" step="1" value="50" aria-describedby="city-weight-help city-proxy-note">
+                </label>
+              </div>
+              <div class="city-weight-footer">
+                <p id="city-weight-help" class="input-help">Move importance from 0 to 100. Displayed weights divide each importance by their total. Equal weights are a starting point, not a recommendation.</p>
+                <button id="city-reset-weights" type="button" class="button button-secondary">Reset to equal weights</button>
+              </div>
+            </fieldset>
+          </form>
+          <p id="city-weight-summary" class="sr-only" aria-live="polite"></p>
+          <p id="city-error" class="validation-message" role="alert" hidden></p>
+          <button id="retry-cities" type="button" class="button button-secondary" hidden>Retry loading</button>
+        </section>
+
+        <div id="city-results" hidden>
+          <section class="panel city-panel" aria-labelledby="city-ranking-title">
+            <div class="panel-heading">
+              <p class="eyebrow">Relative priorities</p>
+              <h2 id="city-ranking-title">Candidate cities</h2>
+              <p id="city-ranking-summary" aria-live="polite"></p>
+            </div>
+            <div class="city-table-scroll" role="region" aria-label="City ranking table; scroll horizontally on small screens" tabindex="0">
+              <table class="city-table">
+                <caption class="sr-only">Weighted city ranking with contributions, raw inputs and change from equal weights</caption>
+                <thead><tr><th scope="col">Rank</th><th scope="col">City / sample</th><th scope="col">Priority index / 100</th><th scope="col">Market size<br><small>2026 · illustrative</small></th><th scope="col">Growth<br><small>CAGR</small></th><th scope="col">Wellness<br><small>Survey share</small></th><th scope="col">Rank change<br><small>vs equal weights</small></th></tr></thead>
+                <tbody id="city-ranking-body"></tbody>
+              </table>
+            </div>
+            <p class="input-help">Bar colours match the three criteria above. Contributions add to the index before display rounding. Ties share a rank; tied cities appear alphabetically. Select a city to inspect its survey evidence.</p>
+            <div class="decision-note city-tradeoff"><h3>The trade-off</h3><p id="city-tradeoff"></p></div>
+            <details class="model-notes">
+              <summary>Scoring, sources and limits</summary>
+              <p id="city-source-context"></p>
+              <p>Each criterion is scaled across these five cities: 100 × (city value − lowest value) / (highest − lowest). The index is the sum of the three scaled values × your normalised weights. A criterion identical across all cities gets 50 for everyone. Zero means lowest in this comparison, not no opportunity.</p>
+              <p id="city-proxy-note">Wellness density is a proxy: the share of Urban Wellness Professionals among all respondents in each city. This is survey composition, not a measured population share or a count of wellness venues. The survey has not been population-weighted. City purchase intent is context only.</p>
+              <p>Reliability is a sample-size flag, not statistical confidence: n ≥ 15 reliable; n = 8–14 directional; n &lt; 8 insufficient. Only city-level inputs enter the ranking. All segment-level averages are diagnostic only; intent is withheld for n &lt; 8. Ranking is unavailable if a candidate city's total sample falls below 15.</p>
+              <p>The regional shares and growth rates are illustrative case assumptions. This screen does not estimate LUMEN market share, city acquisition costs, distribution access or city ROI. Small score gaps do not establish a meaningful difference.</p>
+            </details>
+            <p id="city-other-context" class="input-help"></p>
+          </section>
+
+          <section class="panel city-diagnostics" aria-labelledby="city-diagnostic-title">
+            <div class="city-diagnostic-heading">
+              <div><p class="eyebrow">Evidence behind the comparison</p><h2 id="city-diagnostic-title">City survey diagnostics</h2></div>
+              <label for="city-diagnostic-select">Inspect city <select id="city-diagnostic-select"></select></label>
+            </div>
+            <p id="city-survey-summary"></p>
+            <p class="input-help">Segment averages below never change the ranking. Small samples limit interpretation even when a city total passes the reliability threshold.</p>
+            <div id="city-segment-diagnostics" class="city-segment-grid"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>LUMEN Strategy &amp; Analytics</span>
+      <span>App data: prepared survey aggregates and case assumptions.</span>
+    </footer>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

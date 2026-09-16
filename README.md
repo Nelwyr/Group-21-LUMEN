@@ -67,6 +67,8 @@ What the tool does not do is as important as what it does. It does not forecast 
 
 Serve the repository over HTTP and open `index.html`. No framework, build or external API is required. Regenerate prepared inputs with `py -3 scripts/prepare_app_data.py`.
 
+`index.html` is the story shell: seven empty sections, sticky anchor navigation and a separate simulator link. `simulator.html` preserves the existing workspace, opening ROI scenarios by default; its Overview and City prioritisation tabs retain the existing content pending later relocation. The story uses `story.css` and `story.js`, leaving the shared component styles unchanged.
+
 ### City prioritisation — method
 
 - Market size is the 2026 national functional-beverage total (€9.1bn) multiplied by Exhibit 1's illustrative regional share. Growth uses that exhibit's regional CAGR.
@@ -86,6 +88,8 @@ Serve the repository over HTTP and open `index.html`. No framework, build or ext
 The browser loads only prepared files under `data/app_data/`. `city_prioritisation.json` joins city aggregates and regional assumptions, with segment diagnostics stored separately. It contains no individual survey records or direct identifiers. The original case CSVs remain in this repository. For Vercel deployments, `.vercelignore` excludes the raw `data/*.csv` exhibits and preserves `data/app_data/`; limiting browser fetches alone did not prevent the raw survey from being served. Regenerate prepared data locally before deployment, since its raw source files are excluded from deployment inputs.
 
 Browser checks: `py -3 scripts/check_simulator_ui.py` for the simulator and `py -3 scripts/check_simulator_ui.py --page tests/city-ui.browser.html` for cities. To check an actual 390px iframe viewport, use `--page tests/city-ui.browser.html?viewport=390`. The runner uses installed Chrome without added dependencies.
+
+Story navigation checks: `py -3 scripts/check_simulator_ui.py --page tests/story-shell.browser.html --real-time`. Use `--page tests/story-shell.browser.html?viewport=390 --real-time --reduced-motion` for mobile with reduced motion. Real time lets the browser render scrolling frames before reporting results.
 
 ### Launch window — method
 
