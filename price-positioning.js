@@ -60,7 +60,9 @@ function assessment(rows, price, segment) {
   return `At ${money.format(price)}, LUMEN ${relative} ${closest.brand} (${money.format(closest.priceEur)}), the nearest listed price, ${familiarity}. ${difference >= -1e-7 ? "Matching or exceeding that price means asking shoppers to choose a new entrant alongside an established brand." : "A lower price gives up shelf-price premium against this neighbour, while offering a price reason to try LUMEN."} Awareness measures familiarity; it does not establish quality, willingness to pay or LUMEN's own recognition.`;
 }
 
-export async function initialisePricePositioning() {
+export async function initialisePricePositioning({
+  readPrice, priceEventTarget, priceEventName = "input", priceDescription = "live simulator price",
+} = {}) {
   const controls = document.getElementById("position-controls");
   const segments = document.getElementById("position-segments");
   const channel = document.getElementById("position-channel");
@@ -68,15 +70,17 @@ export async function initialisePricePositioning() {
   const results = document.getElementById("position-results");
   const retry = document.getElementById("retry-positioning");
   const priceInput = document.getElementById("price");
+  const currentPrice = readPrice ?? (() => priceInput.validity.valid ? priceInput.valueAsNumber : null);
   let data;
   function update() {
     if (!data) return;
     const segment = segments.querySelector("input:checked").value;
     const rows = positioningRows(data, segment, channel.value);
-    const price = priceInput.validity.valid && Number.isFinite(priceInput.valueAsNumber) && priceInput.valueAsNumber > 0 ? priceInput.valueAsNumber : null;
+    const value = currentPrice();
+    const price = Number.isFinite(value) && value > 0 ? value : null;
     const maxPrice = Math.max(3.5, price ?? 0, ...data.prices.map((row) => row.priceEur));
     document.getElementById("position-audience").textContent = `${segment} · n = ${rows[0].respondentCount}`;
-    document.getElementById("position-price-summary").textContent = price === null ? "LUMEN price invalid — line hidden" : `LUMEN ${money.format(price)} · live simulator price · awareness unmeasured`;
+    document.getElementById("position-price-summary").textContent = price === null ? "LUMEN price invalid — line hidden" : `LUMEN ${money.format(price)} · ${priceDescription} · awareness unmeasured`;
     document.getElementById("position-assessment").textContent = assessment(rows, price, segment);
     const chart = document.getElementById("position-chart");
     chart.innerHTML = plot(rows, price, maxPrice, segment, Math.min(820, Math.max(240, chart.clientWidth || 820)));
@@ -117,7 +121,7 @@ export async function initialisePricePositioning() {
   }
   segments.addEventListener("change", update);
   channel.addEventListener("change", update);
-  document.getElementById("scenario-form").addEventListener("input", update);
+  (priceEventTarget ?? document.getElementById("scenario-form")).addEventListener(priceEventName, update);
   window.addEventListener("resize", update);
   window.addEventListener("hashchange", update);
   retry.addEventListener("click", load);

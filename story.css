@@ -32,11 +32,37 @@
 #so-what-title { font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.6rem, 6vw, 5.7rem); line-height: .97; letter-spacing: -.055em; }
 .outcome-tradeoff, .outcome-limitation { margin-top: 1.5rem; }
 .outcome-limitation { color: var(--muted); }
+.price-choice-controls { margin: 1.5rem 0 0; padding: 0; border: 0; }
+.price-choice-controls legend { margin-bottom: .8rem; font-weight: 750; }
+.price-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; }
+.price-choice-panel, .story-positioning, .price-payback-note { margin-top: 1.5rem; }
+.price-choice-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.price-choice-metrics div { border-bottom: 0; }
+.price-choice-metrics div:nth-child(2n) { border-right: 1px solid var(--line); }
+.price-choice-metrics div:last-child { border-right: 0; background: var(--surface-raised); }
+.price-choice-tradeoffs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+.price-choice-tradeoffs h3 { font-size: .95rem; }
+.price-choice-tradeoffs p { margin: 0; color: var(--muted); }
+.price-comparison-scroll { overflow-x: auto; }
+.price-comparison-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.price-comparison-table { max-width: none; min-width: 520px; }
+.price-comparison-table caption { text-align: left; margin-bottom: .5rem; }
+.price-score-best { background: var(--surface-raised); }
+.price-score-best th, .price-score-best td:last-child { color: var(--accent); }
+.price-reason-link { color: var(--text); text-decoration: underline; text-underline-offset: .2em; }
 @media (max-width: 600px) {
   .strategy-decisions li { grid-template-columns: 1fr; gap: .35rem; }
   .outcome-panel .metric-grid { grid-template-columns: 1fr; }
   .outcome-panel .metric-grid div { border-right: 0; border-bottom: 1px solid var(--line); }
   .outcome-panel .metric-grid div:last-child { border-bottom: 0; }
+  .price-choice-metrics, .price-choice-tradeoffs { grid-template-columns: 1fr; }
+  .price-choice-metrics div, .price-choice-metrics div:nth-child(2n) { border-right: 0; border-bottom: 1px solid var(--line); }
+  .price-choice-metrics div:last-child { border-bottom: 0; }
+  .price-choices .position-segment { padding: .8rem .4rem; gap: .3rem; }
+  .price-choices .position-segment { flex-wrap: wrap; }
+  .price-choices .position-segment > span { flex-basis: 100%; }
+  .price-comparison-table { min-width: 0; table-layout: fixed; font-size: .75rem; }
+  .price-comparison-table th, .price-comparison-table td { padding: .5rem .25rem; overflow-wrap: anywhere; }
 }
 
 @media (max-width: 1100px) {

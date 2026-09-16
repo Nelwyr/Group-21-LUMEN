@@ -39,7 +39,7 @@ try {
   assert(get("outcome-target").textContent === "Meets the 3:1 LTV:CAC target" && get("outcome-assumptions").textContent.includes("€44.00 CAC"), "Target and acquisition-cost assumption are explicit");
   assert(get("outcome-tradeoff").textContent.includes("10 percentage points") && get("outcome-tradeoff").textContent.includes("46.4%"), "Acceptance and grocery reach sacrifices are quantified");
   assert(["€1.13", "€1.16", "€0.63", "9.77"].every((value) => get("outcome-tradeoff").textContent.includes(value)), "Channel margins and lower-price payback are calculated from the same engine");
-  assert(doc.querySelector(".outcome-limitation").textContent.includes("not a proven optimum"), "Three-price-point limitation is explicit");
+  assert(doc.querySelector("#outcome .outcome-limitation").textContent.includes("not a proven optimum"), "Three-price-point limitation is explicit");
   assert(new URL(doc.querySelector('.home-actions a').href).search === "?scenario=recommended", "Outcome links to the shared recommended simulator inputs");
   assert(doc.documentElement.scrollWidth <= win.innerWidth, "Recommendation fits the viewport without horizontal overflow");
 
