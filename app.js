@@ -1,9 +1,7 @@
 import { initialiseSimulator } from "./simulator-ui.js";
-import { initialiseCities } from "./city-ui.js";
-import { initialiseLaunchWindow } from "./launch-window.js";
 import { initialisePricePositioning } from "./price-positioning.js";
 
-const routes = new Set(["home", "simulator", "cities"]);
+const routes = new Set(["home", "simulator"]);
 const defaultRoute = document.body.dataset.defaultRoute || "home";
 
 function currentRoute() {
@@ -12,6 +10,10 @@ function currentRoute() {
 }
 
 function renderRoute() {
+  if (window.location.hash === "#cities") {
+    window.location.replace("index.html#city");
+    return;
+  }
   const route = currentRoute();
   document.querySelectorAll("[data-view]").forEach((view) => {
     view.hidden = view.dataset.view !== route;
@@ -25,12 +27,14 @@ function renderRoute() {
 
 window.addEventListener("hashchange", renderRoute);
 window.addEventListener("DOMContentLoaded", () => {
+  if (window.location.hash === "#cities") {
+    window.location.replace("index.html#city");
+    return;
+  }
   if (!window.location.hash || !routes.has(window.location.hash.slice(1))) {
     window.history.replaceState(null, "", `#${defaultRoute}`);
   }
   renderRoute();
-  initialiseCities();
   initialiseSimulator();
-  initialiseLaunchWindow();
   initialisePricePositioning();
 });

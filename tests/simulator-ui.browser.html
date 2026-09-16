@@ -61,8 +61,8 @@ try {
   assert(text("scenario-warning").includes("nearest tested endpoint"), "Out-of-range acceptance clamp is disclosed");
   set({ price: 2.29, "mix-dtc": 100, "mix-retail": 0, "mix-gym": 0 });
   assert(metric("contribution") === "€1.25", "Single-channel scenario recalculates from the engine");
-  win.location.hash = "#cities";
-  await until(() => !doc.getElementById("cities").hidden);
+  win.location.hash = "#home";
+  await until(() => !doc.getElementById("home").hidden);
   win.location.hash = "#simulator";
   await until(() => !doc.getElementById("simulator").hidden);
   assert(doc.getElementById("price").value === "2.29", "Scenario survives hash navigation");

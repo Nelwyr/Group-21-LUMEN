@@ -91,8 +91,8 @@ try {
   assert(el("lumen-price-line") && text("position-price-summary").includes("€2.37"), "An unrelated invalid channel mix does not hide a valid price diagnostic");
   el("mix-dtc").value = "40";
   price(2.29);
-  win.location.hash = "cities";
-  await until(() => !el("cities").hidden);
+  win.location.hash = "home";
+  await until(() => !el("home").hidden);
   win.location.hash = "simulator";
   await until(() => !el("simulator").hidden);
   assert(text("position-audience").includes(wellness), "Segment choice survives navigation");
