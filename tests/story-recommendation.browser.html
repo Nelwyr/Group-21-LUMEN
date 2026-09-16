@@ -43,6 +43,23 @@ try {
   assert(new URL(doc.querySelector('.home-actions a').href).search === "?scenario=recommended", "Outcome links to the shared recommended simulator inputs");
   assert(doc.documentElement.scrollWidth <= win.innerWidth, "Recommendation fits the viewport without horizontal overflow");
 
+  const { PRIORITY_SEGMENTS, RECOMMENDED_SCENARIO } = await win.eval('import("/recommendation.js")');
+  await until(() => get("segments-status").textContent === "Segment evidence ready");
+  const highlighted = [...doc.querySelectorAll(".audience-priority")].map((card) => card.dataset.segment);
+  assert(PRIORITY_SEGMENTS.every((name) => get("strategy-who").textContent.includes(name) && highlighted.includes(name)) && highlighted.length === PRIORITY_SEGMENTS.length, "Strategy and Segments name the same shared priority audiences");
+  assert(["city", "timing"].every((id) => get(id).querySelector(".audience-decision h3").textContent === "KEY INSIGHT \u2192 OUR DECISION"), "City and Timing use the correct arrow");
+  for (const route of [doc.querySelector('a[href="simulator.html"]').href, "../simulator.html#home"]) {
+    await new Promise((resolve) => { simulator.addEventListener("load", resolve, { once: true }); simulator.src = "about:blank"; });
+    await new Promise((resolve) => { simulator.addEventListener("load", resolve, { once: true }); simulator.src = route; });
+    await until(() => simulator.contentDocument.getElementById("simulator-status")?.textContent === "Simulator ready");
+    const sim = simulator.contentDocument;
+    const expected = { price: RECOMMENDED_SCENARIO.priceEur, budget: RECOMMENDED_SCENARIO.marketingBudgetEur, cac: RECOMMENDED_SCENARIO.cacEur,
+      "mix-gym": RECOMMENDED_SCENARIO.channelMix["Gym & Office"] * 100, "mix-dtc": RECOMMENDED_SCENARIO.channelMix["DTC Online"] * 100,
+      "mix-retail": RECOMMENDED_SCENARIO.channelMix["Retail/Grocery"] * 100 };
+    assert(Object.entries(expected).every(([id, value]) => sim.getElementById(id).valueAsNumber === value), "Navbar and Overview entry initialise every input from the shared recommendation");
+    assert(["contribution", "ratio", "payback", "acceptance"].every((key) => metric(key) === simMetric(key)), "All entry routes match the story outcome");
+  }
+
   const originalFetch = win.fetch;
   const originalSimFetch = simulator.contentWindow.fetch;
   const assumptions = await (await originalFetch("../data/app_data/simulator_assumptions.json")).json();

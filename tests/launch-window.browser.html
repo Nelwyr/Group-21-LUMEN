@@ -66,6 +66,22 @@ try {
   el("retry-launch").click();
   await until(() => text("launch-status").startsWith("Launch context unavailable"));
   assert(el("launch-results").hidden, "Malformed successful response does not render misleading data");
+  const changed = { ...data, demandTestThreshold: 130 };
+  win.fetch = async (url, ...args) => String(url).includes("launch_window.json") ? new win.Response(JSON.stringify(changed), { status: 200 }) : originalFetch(url, ...args);
+  el("retry-launch").click();
+  await until(() => text("launch-status") === "Launch context ready");
+  doc.querySelector('[data-launch-preset="4"]').click();
+  assert(text("launch-tradeoff").includes("2 months") && text("launch-tradeoff").includes("June") && text("launch-wait") === "2 months to wait", "April prose follows changed demand data");
+  doc.querySelector('[data-launch-preset="9"]').click();
+  assert(text("launch-tradeoff").includes("9 months") && text("launch-tradeoff").includes("June next year") && text("launch-wait") === "9 months to wait", "September prose follows changed data and year wrap");
+  const immediate = { ...data, months: data.months.map((row) => [4, 9].includes(row.month) ? { ...row, demandIndex: 120 } : row) };
+  win.fetch = async (url, ...args) => String(url).includes("launch_window.json") ? new win.Response(JSON.stringify(immediate), { status: 200 }) : originalFetch(url, ...args);
+  el("retry-launch").click();
+  await until(() => text("launch-status") === "Launch context ready");
+  for (const month of [4, 9]) {
+    doc.querySelector(`[data-launch-preset="${month}"]`).click();
+    assert(text("launch-wait") === "Immediate test" && text("launch-tradeoff").includes("begins immediately"), "April and September prose handle immediate demand tests");
+  }
   win.fetch = originalFetch;
   el("retry-launch").click();
   await until(() => text("launch-status") === "Launch context ready");
